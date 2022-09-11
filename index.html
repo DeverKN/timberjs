@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <div id="app">
+      <div x-root x-scope="">
+
+        <template x-template="timer">
+          <div x-scope="{ time: initialTime }" x-interval:1000="time++" x-on:click="time--">
+            {{ time }} s
+          </div>
+        </template>
+
+        <template x-template="counter">
+          <div x-scope="{ count: initialCount }">
+            <button @click="count--">-</button>
+            Count is {{count}} 2x count is {{ count * 2 }}
+            <button @click="count++">+</button>
+            <span x-effect="(() => {if (count > 10) {name = 'George Lopez'}})()"></span>
+          </div>
+        </template>
+
+        <div x-scope:counter="{ count: 0, countRef: null, name: 'Dever' }">
+          <span id="top"></span>
+          <span x-teleport="body">From the bottom ...</span>
+          <input [value]="name">
+          <button @click="count--">-</button>
+            {{ count }}
+          <button @click="count++">+</button>
+          <!-- <template x-effect="console.log({count})"></template> -->
+
+          <div x-if="!(count < 5)" x-scope="{ count: 5 }"><div>
+              <button @click="count--">-</button>
+                {{ count }}
+              <button @click="count++">+</button>
+              <ul>
+                <div x-for="(item, i) in count"><li>Num: {{ item + 1 }} Index: {{ i / 2 }}</li></div>
+              </ul>
+            </div>
+          </div>
+          Hello {{name}}
+          <!-- <div x-component:timer="{ initialTime: 2 }"></div>
+          <div x-component:timer="{ initialTime: 5 }"></div> -->
+
+          <div x-component:counter="{ initialCount: 5 }"></div>
+          <div x-component:counter="{ initialCount: 10 }"></div>
+          <span x-teleport="#top">to the top</span>
+        </div>
+
+      </div>
+    </div>
+    
+    <script>
+      const testAlert = () => alert("test!")
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
