@@ -1,9 +1,12 @@
 import { init } from "../parser";
+import { makeScopeProxy } from "../state";
 import { handleDirective } from "./handleDirective";
 
 console.log("loading")
+
 window["Timber"] = {
-    handleDirective
+    handleDirective,
+    makeScopeProxy
 }
 
 // console.log(window.Timber)

@@ -17,6 +17,7 @@ export const xScope: CompilableDirective<xScopeData> = {
         }
     },
     instance: (element, scope, {dataGetter, scopeId}) => {
+        console.log({parentscope: scope})
         const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
         const baseData = dataGetter(globals) ?? {}
         const newScope = makeScopeProxy(baseData, scope)

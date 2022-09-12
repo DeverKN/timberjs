@@ -1,11 +1,5 @@
-<body>
-  <timber-counter count="5"></timber-counter>
-</div>
-  </body>
-  <script src="/timberjs/runtime/module.ts" type="module"></script>
-  <script>
 
-window.addEventListener('timber-init', () => {
+    window.addEventListener('timber-init', () => {
         (() => {
             const hydrate_timber_counter = (element, $scope) => {
                 const { handleDirective } = Timber
@@ -17,7 +11,6 @@ window.addEventListener('timber-init', () => {
                     $scope,
                     () => {});
                     
-                    console.log({$scope})
                     handleDirective("x-scope",
                     selectorTarget.querySelector("[data-hydration-id='16']"),
                     {dataGetter:function anonymous(additionalGlobals = {}
@@ -123,4 +116,3 @@ target:`self`},
         })()
     })
       
-  </script>

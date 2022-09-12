@@ -26,21 +26,20 @@ export type CompilableDirective<T> = {
 }
 
 
+compilerDirectives.set("x-root", noOp)
+compilerDirectives.set("x-scope", xScope)
 compilerDirectives.set("x-on", xOn)
+compilerDirectives.set("x-model", xModel)
 compilerDirectives.set("x-bind", xBind)
 compilerDirectives.set("x-effect", xEffect)
-compilerDirectives.set("x-scope", xScope)
-compilerDirectives.set("x-root", noOp)
 compilerDirectives.set("x-text", xText)
-compilerDirectives.set("x-cloak", xCloak)
 compilerDirectives.set("x-for", xFor)
+compilerDirectives.set("x-if", xIf)
 compilerDirectives.set("x-hide", xHide)
 compilerDirectives.set("x-HTML", xHTML)
-compilerDirectives.set("x-if", xIf)
 compilerDirectives.set("x-init", xInit)
-compilerDirectives.set("x-model", xModel)
 compilerDirectives.set("x-ref", xRef)
-compilerDirectives.set("x-scope", xScope)
+compilerDirectives.set("x-cloak", xCloak)
 compilerDirectives.set("x-teleport", xTeleport)
 
 export const runtimeDirective = (directiveName: string, element: HTMLElement, scope: Scope, value: string, argument: string, modifiers: string[]) => {

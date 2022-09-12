@@ -6,9 +6,9 @@ type xModelData = {
 }
 
 export const xModel: CompilableDirective<xModelData> = {
-    middleware: (_value, directiveArgument, _directiveModifiers) => {
+    middleware: (value, _directiveArgument, _directiveModifiers) => {
         return {
-            boundVal: directiveArgument
+            boundVal: value
         }
     },
     instance: (element, scope, {boundVal}) => {
