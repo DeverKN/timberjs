@@ -1,25 +1,32 @@
+import { handleChild } from "./parser"
 import { effect, makeScopeProxy, Scope } from "./state"
 
-export type Directive = (element: Element, value: string, scope: Scope, argument: string, modifiers: string[]) => Scope
+export type Directive = (element: HTMLElement, value: string, scope: Scope, argument: string, modifiers: string[]) => Scope
+
+export type CompilableDirective<T> = {
+    middleware: (value: string, argument: string, modifiers: string[]) => T,
+    instance: (element: HTMLElement, scope: Scope, data: T) => Scope
+}
 
 type GlobalsObj = {
     [key: string | symbol]: any
 }
 
-type DirectiveHandler<T> = (globals: GlobalsObj) => T
+export type DirectiveHandler<T> = (globals: GlobalsObj) => T
 
 const bindEmit = (element: Element) => {
     const emit = (eventName: string) => {
-        element.dispatchEvent(new Event(eventName))
+        console.log({eventName})
+        element.dispatchEvent(new Event(eventName, {bubbles: true}))
     }
     return emit
 }
 
 export const directives = new Map<string, Directive>()
 
-const AsyncFunction = (async function () {}).constructor;
+// const AsyncFunction = (async function () {}).constructor;
 
-const makeBaseGlobals = (element: Element) => {
+export const makeBaseGlobals = (element: Element) => {
     return {
         $el: element,
         $emit: bindEmit(element)
@@ -57,13 +64,18 @@ export const makeFuncFromString = <T>(funcString: string): DirectiveHandler<T> =
 }
 
 
-const xOn: Directive = (element, value, scope, directiveArgument, _directiveModifiers) => {
+const xOn: Directive = (element, value, scope, directiveArgument, directiveModifiers) => {
+    const nonOptionModifiers = ["window", "document"]
     const globals = makeGlobalsProxy(scope, element)
     const eventCallback = makeFuncFromString<void>(value)
-    element.addEventListener(directiveArgument, (event) => {
+    const options = Object.fromEntries(directiveModifiers.filter(modifier => !nonOptionModifiers.includes(modifier)).map(modifier => [modifier, true]))
+    let eventTarget: EventTarget = element
+    if (directiveModifiers.includes("window")) eventTarget = window
+    if (directiveModifiers.includes("document")) eventTarget = document
+    eventTarget.addEventListener(directiveArgument, (event) => {
         globals.$event = event
         eventCallback(globals)
-    })
+    }, options)
     return scope
 }
 
@@ -72,6 +84,23 @@ const xText: Directive = (element, value, scope, _directiveArgument, _directiveM
     const textCallback = makeFuncFromString<string>(value)
     effect(() => {
         element.textContent = textCallback(globals)
+    })
+    return scope
+}
+
+const xHTML: Directive = (element, value, scope, directiveArgument, _directiveModifiers) => {
+    const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
+    const htmlCallback = makeFuncFromString<string | Element>(value)
+    effect(() => {
+        const innerHTML = htmlCallback(globals)
+        if (typeof innerHTML === "string") {
+            element.innerHTML = innerHTML
+        } else {
+            element.replaceChildren(innerHTML.cloneNode(true))
+        }
+        if (directiveArgument === "timber" && element.firstChild) {
+            handleChild(element.firstChild, scope)
+        }
     })
     return scope
 }
@@ -91,7 +120,7 @@ const xScope: Directive = (element, value, scope, directiveArgument, _directiveM
 
 const xInit: Directive = (element, value, scope, _directiveArgument, _directiveModifiers) => {
     const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
-    makeFuncFromString<object>(value)(globals)
+    makeFuncFromString<void>(value)(globals)
     return scope
 }
 
@@ -122,33 +151,81 @@ const xHide: Directive = (element, value, scope, _directiveArgument, _directiveM
     return scope
 }
 
-const xModel: Directive = (element, value, scope, directiveArgument, _directiveModifiers) => {
-    element.addEventListener("input", () => {
-        const newVal = element[directiveArgument]
-        scope[value] = newVal
-    })
-    effect(() => {
-        element.setAttribute(directiveArgument, scope[value])
-    })
+const xModel: Directive = (element, value, scope, _directiveArgument, _directiveModifiers) => {
+    const tagName = element.tagName.toLowerCase()
+    switch (tagName) {
+        case ("input"):
+            const inputElement = element as HTMLInputElement
+            const inputType = inputElement.getAttribute("type") ?? "text"
+            if (inputType === "checkbox" || inputType === "radio") {
+                inputElement.addEventListener("change", () => {
+                    const newVal = inputElement.checked
+                    scope[value] = newVal
+                })
+
+                effect(() => {
+                    inputElement.setAttribute("checked", scope[value])
+                })
+            } else {
+                inputElement.addEventListener("input", () => {
+                    const newVal = inputElement.value
+                    scope[value] = newVal
+                })
+
+                effect(() => {
+                    inputElement.setAttribute("value", scope[value])
+                })
+            }
+            break;
+        case ("textarea"):
+            const textAreaElement = element as HTMLTextAreaElement
+            textAreaElement.addEventListener("input", () => {
+                const newVal = textAreaElement.value
+                scope[value] = newVal
+            })
+
+            effect(() => {
+                textAreaElement.setAttribute("value", scope[value])
+            })
+            break;
+        case ("select"):
+            const selectElement = element as HTMLSelectElement
+            selectElement.addEventListener("change", () => {
+                const newVal = selectElement.value
+                scope[value] = newVal
+            })
+
+            effect(() => {
+                selectElement.setAttribute("value", scope[value])
+            })
+            break;
+        default:
+            console.error(`The x-model directive can only be used on <input>, <textarea>, or <select> elements. You tried to use it on a <${tagName}> element`)
+    }
     return scope
 }
 
 const xIf: Directive = (element, value, scope, _directiveArgument, _directiveModifiers) => {
     const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
     const ifCondition = makeFuncFromString<boolean>(value)
-    let child = element.firstChild!
+    let child = element.firstElementChild!
+    // element.appendChild(newChild)
+    handleChild(child, scope)
     let shown = true
     effect(() => {
         // element.setAttribute(directiveArgument, scope[value])
         const ifTrue = ifCondition(globals)
-        // console.log({ifTrue})
+        console.log({ifTrue})
         if (ifTrue) {
             if (!shown) {
+                console.log("append")
                 element.appendChild(child)
                 shown = true
             }
         } else if (shown) {
-            element.removeChild(child)
+            // console.log({remove: element.firstElementChild})
+            console.log("remove")
+            element.removeChild(element.firstElementChild!)
             shown = false
         }
     })
@@ -166,15 +243,49 @@ const xEffect: Directive = (element, value, scope, _directiveArgument, _directiv
 }
 
 const xTemplate: Directive = (element, value, scope, _directiveArgument, _directiveModifiers) => {
-    scope[value] = element.content
+    const tagName = element.tagName.toLowerCase()
+    const isTemplate = tagName === "template"
+    if (!isTemplate) {
+        console.error(`x-template can only be use on <template> elements. You tried to use it on an <${tagName}> element`)
+        return scope
+    }
+    const templateElement = element as HTMLTemplateElement
+    const firstChild = templateElement.content.firstElementChild!
+    // console.log({firstChild})
+    scope[value] = firstChild
     return scope
 }
 
+type SlotsObject = {
+    [slotName: string]: Element
+}
+
 const xComponent: Directive = (element, value, scope, directiveArgument, _directiveModifiers) => {
-    const outerScope = document.createElement("span")
-    outerScope.setAttribute("x-scope", value)
-    outerScope.appendChild(scope[directiveArgument].cloneNode(true))
-    element.appendChild(outerScope)
+    const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
+    const scopeVals = {}
+    const namedSlots: SlotsObject = {}
+    const slots = Array.from(element.children).filter((node) => node.tagName === "SLOT").map((element) => {
+        const slot = element as HTMLSlotElement
+        const slotChildren = slot.firstElementChild!
+        console.log({slot})
+        if (slot.name) {
+            namedSlots[slot.name] = slotChildren
+        }
+        slot.remove()
+        return slotChildren
+    })
+    console.log({slots})
+    console.log({directiveArgument, scope})
+    const newChild = scope[directiveArgument].cloneNode(true)
+    element.appendChild(newChild)
+    const newScope = makeScopeProxy({...scopeVals, $slots: slots, $namedSlots: namedSlots}, scope)
+    effect(() => {
+        Object.entries(makeFuncFromString<any>(value)(globals) ?? {}).forEach(([key, val]) => {
+            console.log({key, val})
+            newScope[key] = val
+        })
+    })
+    handleChild(newChild, newScope)
     return scope
 }
 
@@ -186,18 +297,18 @@ const xTeleport: Directive = (element, value, scope, _directiveArgument, _direct
 
 const xBind: Directive = (element, value, scope, directiveArgument, _directiveModifiers) => {
     const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
-    const effectFunc = makeFuncFromString<any>(value)
+    const boundValueGetter = makeFuncFromString<any>(value)
     effect(() => {
-        element.setAttribute(directiveArgument, effectFunc(globals))
+        element.setAttribute(directiveArgument, boundValueGetter(globals))
     })
     return scope
 }
 
 const xFor: Directive = (element, value, scope, _directiveArgument, _directiveModifiers) => {
     const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
-    const baseChild = element.firstChild!
+    const baseChild = element.children[0]
     // console.log({baseChild})
-    element.removeChild(baseChild)
+    element.replaceChildren()
     let [itemName, interableName] = value.split(" in ")
     let indexName: string | null = null;
     if (itemName.includes(",")) {
@@ -214,18 +325,23 @@ const xFor: Directive = (element, value, scope, _directiveArgument, _directiveMo
         const res = getIterable(globals)
         const iterable = (typeof res === "number" ? 
                         [...Array(scope[interableName]).keys()] : 
-                        ((Symbol.iterator in Object(res)) ? res : Object.keys(res)))
+                        ((Symbol.iterator in Object(res)) ? res : Object.entries(res)))
 
+        console.log({iterable})
         for (let index = 0; index < iterable.length; ++index) {
             const item = iterable[index]
             if (currChild) {
-                currChild = currChild.nextSibling
+                const nextChild = currChild.nextSibling
+                // const scopeVals = indexName ? {[itemName]: item, [indexName]: index} : {[itemName]: item}
+                // const newChild = baseChild.cloneNode(true)
+                // currChild.replaceWith(newChild)
+                // handleChild(newChild, makeScopeProxy(scopeVals, scope))
+                currChild = nextChild
             } else {
-                const outerScope = document.createElement("span")
-                const scopeVals = indexName ? `{${itemName}: ${item}, ${indexName}: ${index}}` : `{${itemName}: ${item}}`
-                outerScope.setAttribute("x-scope", scopeVals)
-                outerScope.appendChild(baseChild.cloneNode(true))
-                element.appendChild(outerScope)
+                const scopeVals = indexName ? {[itemName]: item, [indexName]: index} : {[itemName]: item}
+                const newChild = baseChild.cloneNode(true)
+                element.appendChild(newChild)
+                handleChild(newChild, makeScopeProxy(scopeVals, scope))
             }
         }
 
@@ -242,6 +358,7 @@ const xFor: Directive = (element, value, scope, _directiveArgument, _directiveMo
 directives.set("x-on", xOn)
 directives.set("x-scope", xScope)
 directives.set("x-text", xText)
+directives.set("x-html", xHTML)
 directives.set("x-init", xInit)
 directives.set("x-cloak", xCloak)
 directives.set("x-ref", xRef)

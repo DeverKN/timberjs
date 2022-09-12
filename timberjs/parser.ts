@@ -1,8 +1,8 @@
 import { makeDirective } from "../src/public";
-import { directives, scopes } from "./directives"
+import { directives } from "./directives"
 import { Scope } from "./state";
 
-const handleChild = (child: Node, scope: Scope) => {
+export const handleChild = (child: Node, scope: Scope) => {
     switch (child.nodeType) {
         case (Node.TEXT_NODE):
             const textNode = child as Text
@@ -13,7 +13,8 @@ const handleChild = (child: Node, scope: Scope) => {
         case (Node.COMMENT_NODE):
             return
         default:
-            throw Error("unknown node type")
+            console.log({child})
+            throw Error(`unknown node type ${child.nodeType}`)
     }
 }
 
@@ -66,7 +67,7 @@ const handleElement = (element: Element, scope: Scope) => {
             }
             directive = directives.get(directiveName)
             if (directive) {
-                scope = directive(element, value, scope, directiveArgument, directiveModifiers)
+                scope = directive(element as HTMLElement, value, scope, directiveArgument, directiveModifiers)
                 element.removeAttribute(name)
             } else {
                 console.error(`Unknown directive ${directiveName} (full directive ${name})`)
@@ -88,27 +89,27 @@ export const init = (rootElement?: Element) => {
     const queryRoot = rootElement ?? document
     const roots = queryRoot.querySelectorAll("[x-root]")
 
-    const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-            if (mutation.type === "childList") {
-                console.log({mutations})
-                Array.from(mutation.addedNodes).forEach((addedNode) => {
-                    if (addedNode.nodeType === Node.ELEMENT_NODE) {
-                        const addedElement = addedNode as Element
-                        const scopeId = addedElement.closest("[data-scope-id]")!.dataset.scopeId
-                        const scope = scopes.get(scopeId) ?? {}
-                        handleChild(addedNode, scope)
-                    }
-                })
-            }
-        }
-    })
+    // const observer = new MutationObserver((mutations) => {
+    //     for (const mutation of mutations) {
+    //         if (mutation.type === "childList") {
+    //             console.log({mutations})
+    //             Array.from(mutation.addedNodes).forEach((addedNode) => {
+    //                 if (addedNode.nodeType === Node.ELEMENT_NODE) {
+    //                     const addedElement = addedNode as Element
+    //                     const scopeId = addedElement.closest("[data-scope-id]")!.dataset.scopeId
+    //                     const scope = scopes.get(scopeId) ?? {}
+    //                     handleChild(addedNode, scope)
+    //                 }
+    //             })
+    //         }
+    //     }
+    // })
       
     roots.forEach((root) => {
         handleBaseScope(root)
-        observer.observe(root, {
-            childList: true,
-            subtree: true
-        })
+        // observer.observe(root, {
+        //     childList: true,
+        //     subtree: true
+        // })
     })
 }
