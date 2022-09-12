@@ -1,5 +1,5 @@
-import { CompilableDirective, DirectiveHandler, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { effect } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xModelData = {
     boundVal: string

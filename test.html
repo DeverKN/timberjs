@@ -1,0 +1,74 @@
+
+    <body>
+    <div data-hydration-id="1">
+    <button data-hydration-id="2">-</button>
+    Count is <span data-hydration-id="3"></span>
+    <button data-hydration-id="4">+</button>
+    <counter data-hydration-id="5"></counter>
+</div>
+    </body>
+    <script src="/timberjs/runtime/module.ts" type="module"></script>
+    <script>
+    window.addEventListener('timber-init', () => {
+        const {handleDirective} = Timber
+        
+                    handleDirective("x-root",
+                    selectorTarget.querySelector("[data-hydration-id='1']"),
+                    {}, 
+                    ${scopeId},
+                    () => {});
+                    
+                    handleDirective("x-scope",
+                    selectorTarget.querySelector("[data-hydration-id='1']"),
+                    {dataGetter:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return { count: 0 }
+                            }
+},
+scopeId:`__scope_0`}, 
+                    ${scopeId},
+                    () => {});
+                    
+                    handleDirective("x-on",
+                    selectorTarget.querySelector("[data-hydration-id='2']"),
+                    {event:`click`,
+handler:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count--
+                            }
+},
+options:{},
+target:`self`}, 
+                    ${scopeId},
+                    () => {});
+                    
+                    handleDirective("x-text",
+                    selectorTarget.querySelector("[data-hydration-id='3']"),
+                    {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count
+                            }
+}}, 
+                    ${scopeId},
+                    () => {});
+                    
+                    handleDirective("x-on",
+                    selectorTarget.querySelector("[data-hydration-id='4']"),
+                    {event:`click`,
+handler:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count++
+                            }
+},
+options:{},
+target:`self`}, 
+                    ${scopeId},
+                    () => {});
+                    
+        let selectorTarget = document
+    })
+    </script>

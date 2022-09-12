@@ -1,6 +1,6 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
-import { handleChild } from "../../parser"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { effect } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xEffectData = {
     effectFunc: DirectiveHandler<void>

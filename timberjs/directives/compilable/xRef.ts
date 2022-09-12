@@ -1,5 +1,4 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
-import { effect } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xRefData = {
     refVar: string

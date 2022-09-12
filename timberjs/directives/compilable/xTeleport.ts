@@ -1,6 +1,5 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
-import { handleChild } from "../../parser"
-import { effect } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
+
 
 type xTeleportData = {
     selector: string

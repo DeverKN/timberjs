@@ -1,5 +1,5 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
-import { effect } from "../../state"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xInitData = {
     initCallback: DirectiveHandler<void>

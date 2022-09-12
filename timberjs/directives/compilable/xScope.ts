@@ -1,5 +1,7 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy, scopes } from "../../directives"
-import { effect, makeScopeProxy } from "../../state"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { scopes } from "../../runtime/handleDirective"
+import { makeScopeProxy } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xScopeData = {
     dataGetter: DirectiveHandler<object>,
@@ -8,10 +10,10 @@ type xScopeData = {
 
 let nextScopeId = 0
 export const xScope: CompilableDirective<xScopeData> = {
-    middleware: (value, directiveArgument, _directiveModifiers) => {
+    middleware: (value, _directiveArgument, _directiveModifiers) => {
         return {
             dataGetter: makeFuncFromString(value),
-            scopeId: directiveArgument || `__scope_${nextScopeId++}`
+            scopeId: `__scope_${nextScopeId++}`
         }
     },
     instance: (element, scope, {dataGetter, scopeId}) => {

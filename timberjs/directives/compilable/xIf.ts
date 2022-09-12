@@ -1,6 +1,7 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { handleChild } from "../../parser"
 import { effect } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xIfData = {
     ifCondition: DirectiveHandler<boolean>

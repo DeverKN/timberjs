@@ -1,63 +1,16 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy, scopes } from "../../directives"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { handleChild } from "../../parser"
 import { effect, makeScopeProxy } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
-type xScopeData = {
+type xForData = {
     getIterable: DirectiveHandler<object | any[] | number>,
     itemName: string,
     indexName: string | null
 }
 
-// const cloneTemplate = (arg: any): any => {}
-
-// const xOnClick: any = {}
-
-// const xText: any = {}
-
-// const cloneChild = () => {
-//     const template = `
-//     <div data-template-id=1>
-//         <button data-template-id=2>-</button>
-//         Count is <span data-template-id=3>{{count}}</span>
-//         </button data-template-id=4>+</button>
-//     </div>
-//     `
-//     const instance = cloneTemplate(template)
-//     xOnClick.instance((instance.querySelector("[data-template-id=2]")), {
-//         eventHandler: (globals) => {
-//             with (globals) {
-//                 count--;
-//             }
-//         },
-//         options: {
-
-//         },
-//         target: "self"
-//     })
-//     xText.instance((instance.querySelector("[data-template-id=3]")), {
-//         textHandler: (globals) => {
-//             with(globals) {
-//                 return count
-//             }
-//         }
-//     })
-//     xOnClick.instance((instance.querySelector("[data-template-id=4]")), {
-//         eventHandler: (globals) => {
-//             with (globals) {
-//                 count++;
-//             }
-//         },
-//         options: {
-
-//         },
-//         target: "self"
-//     })
-
-// }
-
-let nextScopeId = 0
-export const xScope: CompilableDirective<xScopeData> = {
-    middleware: (value, directiveArgument, _directiveModifiers) => {
+export const xFor: CompilableDirective<xForData> = {
+    middleware: (value, _directiveArgument, _directiveModifiers) => {
         let [itemName, interableName] = value.split(" in ")
         let indexName: string | null = null;
         if (itemName.includes(",")) {

@@ -1,15 +1,15 @@
-import { CompilableDirective, DirectiveHandler, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { DirectiveHandler, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xOnData = {
     event: string,
-    handler: DirectiveHandler<void>,
+    handler: DirectiveHandler<Function | void>,
     options: AddEventListenerOptions,
     target: "self" | "document" | "window"
 }
 
 export const xOn: CompilableDirective<xOnData> = {
     middleware: (value: string, directiveArgument, directiveModifiers) => {
-        const eventCallback = makeFuncFromString<void>(value)
         const nonOptionModifiers = ["window", "document"]
         const options: AddEventListenerOptions = Object.fromEntries(directiveModifiers.filter(modifier => !nonOptionModifiers.includes(modifier)).map(modifier => [modifier, true]))
         let target: ("self" | "document" | "window") = "self"
@@ -17,14 +17,14 @@ export const xOn: CompilableDirective<xOnData> = {
         if (directiveModifiers.includes("document")) target = "document"
         return {
             event: directiveArgument,
-            handler: eventCallback,
+            handler: makeFuncFromString<Function | void>(value),
             options,
             target
         }
     },
     instance: (element, scope, {event, handler, options, target}) => {
         const globals = makeGlobalsProxy(scope, element)
-        let eventTarget: EventTarget;
+        let eventTarget: EventTarget = element;
         switch (target) {
             case ("self"):
                 eventTarget = element
@@ -39,7 +39,10 @@ export const xOn: CompilableDirective<xOnData> = {
 
         eventTarget.addEventListener(event, (event) => {
             globals.$event = event
-            handler(globals)
+            const returnValue = handler(globals)
+            if (typeof returnValue === "function") {
+                returnValue(event, scope)
+            }
         }, options)
 
         return scope

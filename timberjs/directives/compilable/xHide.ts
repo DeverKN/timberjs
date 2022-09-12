@@ -1,5 +1,6 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { effect } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
 
 type xHideData = {
     shouldHide: DirectiveHandler<boolean>

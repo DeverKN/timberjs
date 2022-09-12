@@ -1,10 +1,10 @@
-import { CompilableDirective, DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy, scopes } from "../../directives"
-import { effect, makeScopeProxy } from "../../state"
+import { CompilableDirective } from "../compilerDirectives"
+
 
 type xCloakData = null
 
 export const xCloak: CompilableDirective<xCloakData> = {
-    middleware: (value, directiveArgument, _directiveModifiers) => {
+    middleware: (_value, _directiveArgument, _directiveModifiers) => {
         return null
     },
     instance: (element, scope) => {

@@ -3,11 +3,6 @@ import { effect, makeScopeProxy, Scope } from "./state"
 
 export type Directive = (element: HTMLElement, value: string, scope: Scope, argument: string, modifiers: string[]) => Scope
 
-export type CompilableDirective<T> = {
-    middleware: (value: string, argument: string, modifiers: string[]) => T,
-    instance: (element: HTMLElement, scope: Scope, data: T) => Scope
-}
-
 type GlobalsObj = {
     [key: string | symbol]: any
 }
