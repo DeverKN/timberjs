@@ -3,7 +3,7 @@ import { effect, makeScopeProxy, Scope } from "./state"
 
 export type Directive = (element: HTMLElement, value: string, scope: Scope, argument: string, modifiers: string[]) => Scope
 
-type GlobalsObj = {
+export type GlobalsObj = {
     [key: string | symbol]: any
 }
 

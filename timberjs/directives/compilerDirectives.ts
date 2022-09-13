@@ -22,7 +22,8 @@ export type FirstElementCloner = (scope: Scope) => HTMLElement;
 
 export type CompilableDirective<T> = {
     middleware: (value: string, argument: string, modifiers: string[]) => T,
-    instance: (element: HTMLElement, scope: Scope, data: T, cloneFirstChild: FirstElementCloner) => void
+    instance: (element: HTMLElement, scope: Scope, data: T, cloneFirstChild: FirstElementCloner) => void,
+    usesChildren?: true
 }
 
 

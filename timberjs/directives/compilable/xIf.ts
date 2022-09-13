@@ -38,5 +38,6 @@ export const xIf: CompilableDirective<xIfData> = {
         })
     
         return scope
-    }
+    },
+    usesChildren: true
 }

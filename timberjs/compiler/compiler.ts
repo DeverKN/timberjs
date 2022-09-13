@@ -10,10 +10,11 @@ const TEXT_NODE = 3
 
 let nextHydrationId = 0
 
-const handleTextNode = (textNode: Text, scopeId: string): [string, string] => {
+const handleTextNode = (textNode: Text, scopeId: string, staticScope?: string): [string, string] => {
     const mustacheRegex = /{{([^}]*)}}/g
-    // const textTemplate = textNode.nodeValue
-    const segments = textNode["text"]?.split(mustacheRegex)
+    const textTemplate = textNode["text"]
+    console.log({textTemplate, staticScope})
+    const segments = textTemplate?.split(mustacheRegex)
 
     let htmlString = ""
     let hydrationString = ""
@@ -29,13 +30,16 @@ const handleTextNode = (textNode: Text, scopeId: string): [string, string] => {
                 htmlString += `<span data-hydration-id="${hydrationId}"></span>`
                 const directiveData = xText.middleware(segment, "", []) as any
 
-                hydrationString += `
+                
+                const templateHydration = `
                 handleDirective("x-text",
                 selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"),
                 ${serialize(directiveData)}, 
-                '${scopeId}');
+                ${staticScope ? staticScope : `'${scopeId}'`});
                 `
 
+                hydrationString += templateHydration
+                // console.log({staticScope, scopeId, templateHydration})
                 isStatic = true
             }
         }
@@ -45,14 +49,16 @@ const handleTextNode = (textNode: Text, scopeId: string): [string, string] => {
     return [htmlString, hydrationString]
 }
 
-const compile = (element: Element, shouldIgnore = false, scopeId = null, staticScope: string | null = null): [string, string] => {
+const compile = (element: Element, shouldIgnore = false, scopeId = null, staticScope?: string): [string, string] => {
+    console.log({scopeId, staticScope})
     if (element.nodeType === TEXT_NODE) {
-        return handleTextNode(element as unknown as Text, scopeId!)
+        console.log({scopeId, staticScope})
+        return handleTextNode(element as unknown as Text, scopeId!, staticScope)
     }
     // console.log(element["structure"])
     let htmlString = ''
     let hydrationString = ''
-    console.log({tag: element.tagName})
+    // console.log({tag: element.tagName})
     const tagName = element.tagName.toLowerCase()
     const isVoid = voidElements.includes(tagName)
     shouldIgnore = shouldIgnore || element.hasAttribute("x-ignore")
@@ -61,20 +67,27 @@ const compile = (element: Element, shouldIgnore = false, scopeId = null, staticS
     htmlString += `<${tagName} data-hydration-id="${hydrationId}"`
     // console.log(element.attributes)
 
-    const children = element.childNodes as unknown as HTMLElement[]
+    // const children = element.childNodes as unknown as HTMLElement[]
     let cloneFirstChild = "() => {}"
-    const firstChild = children[0]
+    const firstChild = element.firstChild
+    // console.log({firstChild})
     if (firstChild && firstChild.nodeType !== TEXT_NODE) {
-        const [childHTML, childHydration] = compile(firstChild, shouldIgnore, scopeId, "$scope")
+        // compile(component.firstChild as Element, false, null, '$scope')
+        console.log("with $scope")
+        const [childHTML, childHydration] = compile(firstChild as Element, shouldIgnore, scopeId, '$scope')
         cloneFirstChild = `($scope) => {
-            const template = document.createElement(template);
-            template.innerHTML = ${childHTML};
+            const template = document.createElement('template');
+            template.innerHTML = \`${childHTML}\`;
             const clone = template.content
             let selectorTarget = clone
             ${childHydration}
-            return clone
+            const el = clone.firstChild
+            console.log({template, clone, el})
+            return el
         }`
     }
+
+    let shouldParseChildren = true;
 
     for (const [name, value] of Object.entries(element.attributes)) {
         if (!shouldIgnore) {
@@ -108,9 +121,9 @@ const compile = (element: Element, shouldIgnore = false, scopeId = null, staticS
                     hydrationString += `
                     handleDirective("${directiveName}",
                     selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"),
-                    ${serialize(directiveData)}, 
-                    ${staticScope ? staticScope : `'${scopeId}'`},
-                    ${cloneFirstChild});
+                    ${serialize(directiveData)},
+                    ${staticScope ? staticScope : `'${scopeId}'`}
+                    ${directive.usesChildren ? `, ${cloneFirstChild}` : ''});
                     `
 
                     if (name === "x-cloak") {
@@ -119,9 +132,12 @@ const compile = (element: Element, shouldIgnore = false, scopeId = null, staticS
 
                     if (directiveName === "x-scope") {
                         scopeId = directiveData.scopeId
-                        staticScope = null
+                        // console.log({scopeId, staticScope})
+                        staticScope = undefined
                         // console.log({scopeId})
                     }
+
+                    if (directive.usesChildren) shouldParseChildren = false
                 } else {
                     console.error(`Unknown directive ${directiveName} (full directive ${name})`)
                     htmlString += ` ${name}="${value}"`
@@ -135,12 +151,15 @@ const compile = (element: Element, shouldIgnore = false, scopeId = null, staticS
     htmlString += `>`
 
     if (!isVoid) {
-        const children = element.childNodes as unknown as HTMLElement[]
-        for (const child of children) {
-            const [childHTML, childHydration] = compile(child, shouldIgnore, scopeId)
-            htmlString += childHTML
-            hydrationString += childHydration
+        if (shouldParseChildren) {
+            const children = element.childNodes as unknown as HTMLElement[]
+            for (const child of children) {
+                const [childHTML, childHydration] = compile(child, shouldIgnore, scopeId, staticScope)
+                htmlString += childHTML
+                hydrationString += childHydration
+            }
         }
+
         htmlString += `</${tagName}>`
     }
 
@@ -148,6 +167,7 @@ const compile = (element: Element, shouldIgnore = false, scopeId = null, staticS
 }
 
 const parseTimber = (rawHtml: string) => {
+    nextHydrationId = 0
     const root: HTMLElement = parse(rawHtml.trim()) as unknown as HTMLElement;
     // console.log(root.nodeType);
     // console.log(root["structure"])
@@ -183,16 +203,37 @@ const parseTimber = (rawHtml: string) => {
 // parseTimber(`<ul x-on:click="alert('1')" id="list"><li>Hello World</li></ul>`)
 
 const compileToWebComponent = (rawHtml: string) => {
-
+    nextHydrationId = 0
     const root: HTMLElement = parse(rawHtml.trim()) as unknown as HTMLElement;
     // console.log(root.nodeType);
     // console.log(root["structure"])
     const component = root.firstChild! as Element
-    const componentName = component.tagName.toLowerCase()
-    const props = Object.keys(component.attributes)
+    const componentName = component.getAttribute("x-component")
+    if (!componentName) {
+        throw Error("Timber component templates must specify a component name using x-component='component-name'")
+    }
+    const propsObject = Object.fromEntries(Object.entries(component.attributes).filter(([key, _]) => key !== 'x-component'))
+    const props = Object.keys(propsObject).map(key => {
+        const segments = key.split(':')
+        if (segments.length === 2) {
+            return segments[1]
+        } else {
+            return segments[0]
+        }
+    })
     // const propDefaults = Object.values(component.attributes)
-    const propsWithDefalts = Object.entries(component.attributes) as unknown as any[]
-    console.log([component.firstChild])
+    const propsWithDefalts = Object.entries(propsObject).map(([attr, val]) => {
+        let type = "string"
+        let prop;
+        const segments = attr.split(':')
+        if (segments.length === 2) {
+            [type, prop] = segments
+        } else {
+            prop = segments[0]
+        }
+        return { type, prop, default: val}
+    }) as unknown as any[]
+    // console.log([component.firstChild])
     const [html, hydration] = compile(component.firstChild as Element, false, null, '$scope')
 
     const escapedComponentName = componentName.replaceAll("-", "_")
@@ -209,12 +250,20 @@ const compileToWebComponent = (rawHtml: string) => {
             class ${escapedComponentName} extends HTMLElement {
 
                 static get observedAttributes() { return [${props.map(prop => `'${prop}'`).join(',')}]; }
+                static get attributeTypes() { return {${propsWithDefalts.map(propDefault => `${propDefault.prop}:'${propDefault.type}'`).join(',')}}; }
 
                 constructor() {
                     // Always call super first in constructor
                     super();
                     const { makeScopeProxy } = Timber
-                    this.$scope = makeScopeProxy({${propsWithDefalts.map(propDefault => `${propDefault[0]}:'${propDefault[1]}'`).join(',')}})
+                    this.$scope = makeScopeProxy({${propsWithDefalts.map(propDefault => {
+                        // const {type, prop, default } = propDefault
+                        if (propDefault.type === 'num' || propDefault.type === 'bool') {
+                            return `${propDefault.prop}:${propDefault.default}`
+                        } else {
+                            return `${propDefault.prop}:'${propDefault.default}'`;
+                        }
+                    }).join(',')}})
                 }
 
                 connectedCallback() {
@@ -224,30 +273,38 @@ const compileToWebComponent = (rawHtml: string) => {
                     const element = wrapper.content.firstElementChild
                     // Element functionality written in here
                     hydrate_${escapedComponentName}(wrapper.content, this.$scope)
+                    for (const {name, value} of this.attributes) {
+                        if (${escapedComponentName}.observedAttributes.includes(name)) {
+                            this.$scope[name] = this.parseAttr(name, value)
+                        }
+                    }
                     this.shadowRoot.append(element)
                 }
 
                 attributeChangedCallback(name, oldValue, newValue) {
-                    this.$scope[name] = newValue
+                    this.$scope[name] = this.parseAttr(name, newValue)
+                }
+
+                parseAttr(name, val) {
+                    const type = ${escapedComponentName}.attributeTypes[name]
+                    switch (type) {
+                        case("bool"):
+                            return (val === 'true')
+                        case("num"):
+                            return parseFloat(val)
+                        default:
+                            return val
+                    }
                 }
                   
             }
     
           customElements.define('${componentName}', ${escapedComponentName});
         })()
-    })
-      `
-      
+    })`
 }
 
-const counterHTML = `<timber-counter count='5' name='Jeff Bezos'><div x-root x-scope="{}">
-        <button @click="count--">-</button>
-        <input x-model="name">
-        Hello {{ name }}! Count is {{ count }}
-        <button @click="count++">+</button>
-        <Counter></Counter>
-    </div>
-</timber-counter>`
+const counterHTML = `<template x-component='timber-counter' num:count='5' str:name='Jeff Bezos'><div x-root x-scope="{}"><button @click="count--">-</button><input x-model="name">Hello {{ name }}! Count is {{ count }}<button @click="count++">+</button><div x-for="(item, i) in count"><div>{{item}}<div/></div></div></template>`
 const body = parseTimber(counterHTML)
 
 writeFileSync("test.html", body)

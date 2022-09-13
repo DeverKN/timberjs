@@ -1,0 +1,12 @@
+<template str:label="Count is" num:count="0">
+    <div>
+        <button @click="count--">-</button>
+        {{ label }}{{ count }}
+        <button @click="count++">+</button>
+    </div>
+    <style>
+        button {
+            color: red;
+        }
+    </style>
+</template>

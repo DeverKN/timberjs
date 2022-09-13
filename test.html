@@ -1,13 +1,6 @@
 
     <body>
-    <timber-counter data-hydration-id="1"><div data-hydration-id="9">
-        <button data-hydration-id="10">-</button>
-        <input data-hydration-id="11">
-        Hello <span data-hydration-id="12"></span>! Count is <span data-hydration-id="13"></span>
-        <button data-hydration-id="14">+</button>
-        <counter data-hydration-id="15"></counter>
-    </div>
-</timber-counter>
+    <template data-hydration-id="1" x-component="timber-counter"><button data-hydration-id="3">-</button><input data-hydration-id="4">Hello <span data-hydration-id="5"></span>! Count is <span data-hydration-id="6"></span><button data-hydration-id="7">+</button><div data-hydration-id="8"></div></template>
     </body>
     <script src="/timberjs/runtime/module.ts" type="module"></script>
     <script>
@@ -15,26 +8,8 @@
         const {handleDirective} = Timber
         let selectorTarget = document
         
-                    handleDirective("x-root",
-                    selectorTarget.querySelector("[data-hydration-id='9']"),
-                    {}, 
-                    'null',
-                    () => {});
-                    
-                    handleDirective("x-scope",
-                    selectorTarget.querySelector("[data-hydration-id='9']"),
-                    {dataGetter:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return {}
-                            }
-},
-scopeId:`__scope_1`}, 
-                    'null',
-                    () => {});
-                    
                     handleDirective("x-on",
-                    selectorTarget.querySelector("[data-hydration-id='10']"),
+                    selectorTarget.querySelector("[data-hydration-id='3']"),
                     {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
@@ -43,38 +18,38 @@ with (additionalGlobals) {
                             }
 },
 options:{},
-target:`self`}, 
-                    '__scope_1',
-                    () => {});
+target:`self`},
+                    'null'
+                    );
                     
                     handleDirective("x-model",
-                    selectorTarget.querySelector("[data-hydration-id='11']"),
-                    {boundVal:`name`}, 
-                    '__scope_1',
-                    () => {});
+                    selectorTarget.querySelector("[data-hydration-id='4']"),
+                    {boundVal:`name`},
+                    'null'
+                    );
                     
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='12']"),
+                selectorTarget.querySelector("[data-hydration-id='5']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  name 
                             }
 }}, 
-                '__scope_1');
+                'null');
                 
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='13']"),
+                selectorTarget.querySelector("[data-hydration-id='6']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  count 
                             }
 }}, 
-                '__scope_1');
+                'null');
                 
                     handleDirective("x-on",
-                    selectorTarget.querySelector("[data-hydration-id='14']"),
+                    selectorTarget.querySelector("[data-hydration-id='7']"),
                     {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
@@ -83,9 +58,42 @@ with (additionalGlobals) {
                             }
 },
 options:{},
-target:`self`}, 
-                    '__scope_1',
-                    () => {});
+target:`self`},
+                    'null'
+                    );
+                    
+                    handleDirective("x-for",
+                    selectorTarget.querySelector("[data-hydration-id='8']"),
+                    {getIterable:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count
+                            }
+},
+indexName:`i`,
+itemName:`item`,
+keyBy:null},
+                    'null'
+                    , ($scope) => {
+            const template = document.createElement('template');
+            template.innerHTML = `<div data-hydration-id="9"><span data-hydration-id="10"></span><div data-hydration-id="11"></div></div>`;
+            const clone = template.content
+            let selectorTarget = clone
+            
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='10']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return item
+                            }
+}}, 
+                $scope);
+                
+            const el = clone.firstChild
+            console.log({template, clone, el})
+            return el
+        });
                     
     })
     </script>
