@@ -108,18 +108,22 @@ const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnor
 
     for (const [name, value] of Object.entries(element.attributes)) {
         if (!shouldIgnore) {
-            if ((name.includes("-") && !name.startsWith("data")) || name.startsWith("@") || name.startsWith(":")) {
+            // console.log({name})
+            const isBind = name.startsWith("[") && name.endsWith("]")
+            const isOn = name.startsWith("@")
+            if ((name.includes("-") && !name.startsWith("data")) || isOn || (isBind)) {
                 let directiveName: string;
                 let directive: CompilableDirective<any> | undefined;
                 let directiveBody = ""
                 let directiveArgument = ""
                 let directiveModifiers: string[] = []
-                // console.log({name})
-                if (name.startsWith(":")) {
+                console.log({name})
+                if (isBind) {
                     directiveName = "x-bind";
-                    const directiveString = name.substring(1);
+                    const directiveString = name.slice(1, -1);
+                    // console.log({directiveString});
                     [directiveArgument, ...directiveModifiers] = directiveString.split(".");
-                } else if (name.startsWith("@")) {
+                } else if (isOn) {
                     directiveName = "x-on";
                     const directiveString = name.substring(1);
                     [directiveArgument, ...directiveModifiers] = directiveString.split(".");
@@ -168,7 +172,7 @@ const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnor
     }
     htmlString += `>`
 
-    console.log({tagName, attrs: Object.entries(element.attributes), htmlString})
+    // console.log({tagName, attrs: Object.entries(element.attributes), htmlString})
 
     if (!isVoid) {
         if (shouldParseChildren) {

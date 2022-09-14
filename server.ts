@@ -71,8 +71,20 @@ app.get("/", (req, res) => {
     loadPage(req, res, "_index")
 });
 
+app.get("/favicon.ico.html", (_req, res) => {
+    // const assetUrl = req.params.assetUrl
+    console
+    res.send('boo!')
+    // res.sendFile(`./built/dist/assets/${assetUrl}`, options)
+});
+
 app.get("/:page", (req, res) => {
-    loadPage(req, res, req.params.page)
+    const { page } = req.params
+    if (page === 'favicon.ico.html') {
+        res.send('boo!')
+    } else {
+        loadPage(req, res, page)
+    }
 });
 
 app.get("/assets/:assetUrl", (req, res) => {

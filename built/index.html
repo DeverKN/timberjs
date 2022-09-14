@@ -1,10 +1,13 @@
 
     <head>
-    <link rel="icon" href="data:,">
+        <link rel="icon" href="data:,">
     </head>
     <body>
     <div data-hydration-id="1">
-    <timber-clicker data-hydration-id="7" label="Count = " count="88"></timber-clicker>
+    <div data-hydration-id="2">
+        <input data-hydration-id="3">
+        <a data-hydration-id="4">Go to <span data-hydration-id="5"></span></a>
+    </div>
 </div>
     </body>
     <script src="../timberjs/runtime/module.ts" type="module"></script>
@@ -13,109 +16,45 @@
         const {handleDirective} = Timber
         let selectorTarget = document;
         
-        (() => {
-            const hydrate_timber_clicker = (element, $scope) => {
-                const { handleDirective } = Timber
-                let selectorTarget = element
-                
-                    handleDirective("x-on",
-                    selectorTarget.querySelector("[data-hydration-id='3']"),
-                    {event:`click`,
-handler:function anonymous(additionalGlobals = {}
+                    handleDirective("x-scope",
+                    selectorTarget.querySelector("[data-hydration-id='2']"),
+                    {dataGetter:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return count--
+                                return { to: '/counter' }
                             }
 },
-options:{},
-target:`self`},
-                    $scope
+scopeId:`__scope_1`},
+                    'null'
                     );
                     
-                handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='4']"),
-                {textCallback:function anonymous(additionalGlobals = {}
+                    handleDirective("x-model",
+                    selectorTarget.querySelector("[data-hydration-id='3']"),
+                    {boundVal:`to`},
+                    '__scope_1'
+                    );
+                    
+                    handleDirective("x-bind",
+                    selectorTarget.querySelector("[data-hydration-id='4']"),
+                    {attributeName:`href`,
+boundValueGetter:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return  label 
+                                return to
                             }
-}}, 
-                $scope);
-                
+}},
+                    '__scope_1'
+                    );
+                    
                 handleDirective("x-text",
                 selectorTarget.querySelector("[data-hydration-id='5']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return  count 
+                                return  to 
                             }
 }}, 
-                $scope);
+                '__scope_1');
                 
-                    handleDirective("x-on",
-                    selectorTarget.querySelector("[data-hydration-id='6']"),
-                    {event:`click`,
-handler:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return count++
-                            }
-},
-options:{},
-target:`self`},
-                    $scope
-                    );
-                    
-            }
-    
-            class timber_clicker extends HTMLElement {
-
-                static get observedAttributes() { return ['label','count']; }
-                static get attributeTypes() { return {label:'str',count:'num'}; }
-
-                constructor() {
-                    // Always call super first in constructor
-                    super();
-                    const { makeScopeProxy } = Timber
-                    this.$scope = makeScopeProxy({label:'Count is ',count:0})
-                }
-
-                connectedCallback() {
-                    this.attachShadow({mode: 'open'});
-                    const wrapper = document.createElement('template');
-                    wrapper.innerHTML = `<div data-hydration-id="1"><button data-hydration-id="3">-</button><span data-hydration-id="4"></span><span data-hydration-id="5"></span><button data-hydration-id="6">+</button></div>`
-                    const element = wrapper.content.firstElementChild
-                    // Element functionality written in here
-                    hydrate_timber_clicker(wrapper.content, this.$scope)
-                    for (const {name, value} of this.attributes) {
-                        if (timber_clicker.observedAttributes.includes(name)) {
-                            this.$scope[name] = this.parseAttr(name, value)
-                        }
-                    }
-                    const style = document.createElement('style');
-                    style.textContent = `button {color: red;}`
-                    this.shadowRoot.append(style, element)
-                }
-
-                attributeChangedCallback(name, oldValue, newValue) {
-                    this.$scope[name] = this.parseAttr(name, newValue)
-                }
-
-                parseAttr(name, val) {
-                    const type = timber_clicker.attributeTypes[name]
-                    switch (type) {
-                        case("bool"):
-                            return (val === 'true')
-                        case("num"):
-                            return parseFloat(val)
-                        default:
-                            return val
-                    }
-                }
-                  
-            }
-    
-          customElements.define('timber-clicker', timber_clicker);
-        })()
     })
     </script>
