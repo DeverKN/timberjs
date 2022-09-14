@@ -5,25 +5,28 @@ import { CompilableDirective } from "../compilerDirectives"
 
 type xHTMLData = {
     htmlCallback: DirectiveHandler<string | Element>,
-    isTimber: boolean
+    isTimber: boolean,
+    isElement: boolean
 }
 
 export const xHTML: CompilableDirective<xHTMLData> = {
     middleware: (value, directiveArgument, _directiveModifiers) => {
         return {
             htmlCallback: makeFuncFromString<string | Element>(value),
-            isTimber: directiveArgument === "timber"
+            isTimber: directiveArgument === "timber",
+            isElement: directiveArgument === "element"
         }
     },
-    instance: (element, scope, {htmlCallback, isTimber}) => {
+    instance: (element, scope, {htmlCallback, isTimber, isElement}) => {
         const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
 
         effect(() => {
-            const innerHTML = htmlCallback(globals)
-            if (typeof innerHTML === "string") {
-                element.innerHTML = innerHTML
-            } else {
+            if (isElement) {
+                const innerHTML = htmlCallback(globals) as Element
                 element.replaceChildren(innerHTML.cloneNode(true))
+            } else {
+                const innerHTML = htmlCallback(globals) as string
+                element.innerHTML = innerHTML
             }
             if (isTimber && element.firstChild) {
                 handleChild(element.firstChild, scope)

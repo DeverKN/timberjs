@@ -45,7 +45,13 @@ target:`self`},
                             this.$scope[name] = this.parseAttr(name, value)
                         }
                     }
-                    this.shadowRoot.append(element)
+                    const style = document.createElement('style');
+                    style.textContent = `
+button {
+    color: red;
+}
+`
+                    this.shadowRoot.append(style, element)
                 }
 
                 attributeChangedCallback(name, oldValue, newValue) {
