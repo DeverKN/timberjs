@@ -16,62 +16,45 @@ const app = express();
 const options = {
     root: join(__dirname)
 }
-const loadPage = async (_req, res, page) => {
-    // const {loader} = await import(`./ts-built/pages/${page}.js`)
-    // const loaderRes = {
-    //     render: async (vDomNode) => {
-    //         // console.log({render: vDomNode})
-    //         const domString = renderToHydrationString(vDomNode)
-    //         writeFile(path.join(".","built",`index.html`), domString, () => {})
-    //         const buildOutput = await build({
-    //             root: path.resolve(__dirname, `./built/`),
-    //             base: `./`,
-    //             build: {
-    //             rollupOptions: {
-    //                 // ...
-    //                 }
-    //             }
-    //         })
-    //         const [first, second] = buildOutput.output
-
-    //         const htmlString = first.hasOwnProperty("source") ? first.source : second.source
-
-    //         // console.log({page, htmlString})
-    //         res.send(htmlString);
-    //     }
-    // }
-    // loader(req, loaderRes)
-
-    const domString = parseTimber(readFileSync(`./pages/${page}.html`).toString(), {
-        componentResolution: "component-folder",
-        definedWebComponents: new Set(),
-        loadedComponents: new Set()
-    })
-
-    writeFile(path.join(".","built",`index.html`), domString, () => {})
-    const buildOutput = await build({
-        root: path.resolve(__dirname, `./built/`),
-        base: `./`,
-        build: {
-        rollupOptions: {
-
-            }
+const loadPage = async (req, res, page) => {
+    const { default: loader } = await import(`./pages/${page}/loader.js`)
+    const loaderRes = {
+        render: async (pageProps) => {
+            // console.log({render: vDomNode})
+            const domString = parseTimber(readFileSync(`./pages/${page}/page.html`).toString(), {
+                componentResolution: "component-folder",
+                definedWebComponents: new Set(),
+                loadedComponents: new Set()
+            }, pageProps)
+        
+            writeFile(path.join(".","built",`index.html`), domString, () => {})
+            const buildOutput = await build({
+                root: path.resolve(__dirname, `./built/`),
+                base: `./`,
+                build: {
+                rollupOptions: {
+        
+                    }
+                }
+            })
+        
+            const [first, second] = buildOutput['output']
+        
+            const htmlString = first.hasOwnProperty("source") ? first.source : second.source
+        
+            // console.log({page, htmlString})
+            res.send(htmlString);
         }
-    })
+    }
+    loader(req, loaderRes)
 
-    const [first, second] = buildOutput['output']
-
-    const htmlString = first.hasOwnProperty("source") ? first.source : second.source
-
-    // console.log({page, htmlString})
-    res.send(htmlString);
 }
 
 app.get("/", (req, res) => {
     loadPage(req, res, "_index")
 });
 
-app.get("/favicon.ico.html", (_req, res) => {
+app.get("/favicon.ico", (_req, res) => {
     // const assetUrl = req.params.assetUrl
     console
     res.send('boo!')
@@ -80,10 +63,10 @@ app.get("/favicon.ico.html", (_req, res) => {
 
 app.get("/:page", (req, res) => {
     const { page } = req.params
-    if (page === 'favicon.ico.html') {
-        res.send('boo!')
-    } else {
+    try {
         loadPage(req, res, page)
+    } catch (e) {
+        res.send(e)
     }
 });
 
@@ -92,4 +75,6 @@ app.get("/assets/:assetUrl", (req, res) => {
     res.sendFile(`./built/dist/assets/${assetUrl}`, options)
 });
 
-app.listen(8080);
+const port = 8080
+app.listen(port);
+console.log(`Dev server listening at localhost:${port}`)

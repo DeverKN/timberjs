@@ -1,9 +1,10 @@
-import { parse } from 'node-html-parser';
+// import { parse } from 'node-html-parser';
 import { CompilableDirective, compilerDirectives } from '../directives/compilerDirectives';
 import { serialize } from './serialize';
-import { readFileSync } from 'fs'
+import { writeFileSync, readFileSync } from 'fs'
 import { xText } from '../directives/compilable/xText';
 import { xHTML } from '../directives/compilable/xHTML';
+import { Node, NodeTag, parser } from 'posthtml-parser'
 
 const voidElements = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 
@@ -57,17 +58,19 @@ type CompilerOptions = {
     loadedComponents: Set<string>
 }
 
-const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnore = false, scopeId = null, staticScope?: string): [string, string] => {
+const compile = (element: Node, compilerOptions: CompilerOptions, shouldIgnore = false, scopeId = null, staticScope?: string): [string, string] => {
     // console.log({scopeId, staticScope})
-    if (element.nodeType === TEXT_NODE) {
+    // if (typeof element === "number") throw Error("Numbers are not allowed")
+    if (typeof element === "string" || typeof element === "number") {
         // console.log({scopeId, staticScope})
         return handleTextNode(element as unknown as Text, scopeId!, staticScope)
     }
+    if (typeof element !== "object") throw Error("e")
     // console.log(element["structure"])
     let htmlString = ''
     let hydrationString = ''
     // console.log({tag: element.tagName})
-    const tagName = element.tagName.toLowerCase()
+    const tagName = element.tag as string
     const {definedWebComponents, loadedComponents} = compilerOptions
     if (tagName.includes("-") && !(definedWebComponents.has(tagName) || loadedComponents.has(tagName))) {
         //Load custom component
@@ -78,20 +81,21 @@ const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnor
         loadedComponents.add(tagName)
     }
     const isVoid = voidElements.includes(tagName)
-    shouldIgnore = shouldIgnore || element.hasAttribute("x-ignore")
-    if (element.hasAttribute("x-root")) shouldIgnore = false
+    const hasIgnore = (element.attrs && element.attrs.hasOwnProperty("x-ignore")) ?? false
+    shouldIgnore = shouldIgnore || hasIgnore
+    if (element.attrs && element.attrs.hasOwnProperty("x-root")) shouldIgnore = false
     const hydrationId = ++nextHydrationId
     htmlString += `<${tagName} data-hydration-id="${hydrationId}"`
     // console.log(element.attributes)
 
     // const children = element.childNodes as unknown as HTMLElement[]
     let cloneFirstChild = "() => {}"
-    const firstChild = element.firstChild
+    const firstChild = element.content?.[0]
     // console.log({firstChild})
     if (firstChild && firstChild.nodeType !== TEXT_NODE) {
         // compile(component.firstChild as Element, false, null, '$scope')
         // console.log("with $scope")
-        const [childHTML, childHydration] = compile(firstChild as Element, compilerOptions, shouldIgnore, scopeId, '$scope')
+        const [childHTML, childHydration] = compile(firstChild, compilerOptions, shouldIgnore, scopeId, '$scope')
         cloneFirstChild = `($scope) => {
             const template = document.createElement('template');
             template.innerHTML = \`${childHTML}\`;
@@ -106,68 +110,74 @@ const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnor
 
     let shouldParseChildren = true;
 
-    for (const [name, value] of Object.entries(element.attributes)) {
-        if (!shouldIgnore) {
-            // console.log({name})
-            const isBind = name.startsWith("[") && name.endsWith("]")
-            const isOn = name.startsWith("@")
-            if ((name.includes("-") && !name.startsWith("data")) || isOn || (isBind)) {
-                let directiveName: string;
-                let directive: CompilableDirective<any> | undefined;
-                let directiveBody = ""
-                let directiveArgument = ""
-                let directiveModifiers: string[] = []
+    if (element.attrs) {
+        
+        for (const [name, value] of Object.entries(element.attrs)) {
+            if (!shouldIgnore) {
+                // console.log({name})
+                const xBindShorthandRegex = /\[([^.]+)\](\.(?:[^.]+))*/
+                const bindMatch = name.match(xBindShorthandRegex)
+                const isOn = name.startsWith("@")
                 console.log({name})
-                if (isBind) {
-                    directiveName = "x-bind";
-                    const directiveString = name.slice(1, -1);
-                    // console.log({directiveString});
-                    [directiveArgument, ...directiveModifiers] = directiveString.split(".");
-                } else if (isOn) {
-                    directiveName = "x-on";
-                    const directiveString = name.substring(1);
-                    [directiveArgument, ...directiveModifiers] = directiveString.split(".");
-                } else if (name.includes(":")) {
-                    [directiveName, directiveBody] = name.split(":");
-                    [directiveArgument, ...directiveModifiers] = directiveBody.split(".");
-                } else {
-                    directiveName = name
-                }
-
-                directive = compilerDirectives.get(directiveName)
-
-                if (directive) {
-                    const directiveData = directive.middleware(value as unknown as string, directiveArgument, directiveModifiers)
-
-                    hydrationString += `
-                    handleDirective("${directiveName}",
-                    selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"),
-                    ${serialize(directiveData)},
-                    ${staticScope ? staticScope : `'${scopeId}'`}
-                    ${directive.usesChildren ? `, ${cloneFirstChild}` : ''});
-                    `
-
-                    if (name === "x-cloak") {
-                        htmlString += ` x-cloak`
+                if ((name.includes("-") && !name.startsWith("data")) || isOn || bindMatch) {
+                    let directiveName: string;
+                    let directive: CompilableDirective<any> | undefined;
+                    let directiveBody = ""
+                    let directiveArgument = ""
+                    let directiveModifiers: string[] = []
+    
+                    if (bindMatch) {
+                        directiveName = "x-bind";
+                        // const directiveString = name.slice(1, -1);
+                        // console.log({directiveString});
+                        [directiveArgument, ...directiveModifiers] = bindMatch.slice(1);
+                        console.log({directiveArgument, directiveModifiers})
+                    } else if (isOn) {
+                        directiveName = "x-on";
+                        const directiveString = name.substring(1);
+                        [directiveArgument, ...directiveModifiers] = directiveString.split(".");
+                    } else if (name.includes(":")) {
+                        [directiveName, directiveBody] = name.split(":");
+                        [directiveArgument, ...directiveModifiers] = directiveBody.split(".");
+                    } else {
+                        directiveName = name
                     }
-
-                    if (directiveName === "x-scope") {
-                        scopeId = directiveData.scopeId
-                        // console.log({scopeId, staticScope})
-                        staticScope = undefined
-                        // console.log({scopeId})
+    
+                    directive = compilerDirectives.get(directiveName)
+    
+                    if (directive) {
+                        const directiveData = directive.middleware(value as unknown as string, directiveArgument, directiveModifiers)
+    
+                        hydrationString += `
+                        handleDirective("${directiveName}",
+                        selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"),
+                        ${serialize(directiveData)},
+                        ${staticScope ? staticScope : `'${scopeId}'`}
+                        ${directive.usesChildren ? `, ${cloneFirstChild}` : ''});
+                        `
+    
+                        if (name === "x-cloak") {
+                            htmlString += ` x-cloak`
+                        }
+    
+                        if (directiveName === "x-scope") {
+                            scopeId = directiveData.scopeId
+                            // console.log({scopeId, staticScope})
+                            staticScope = undefined
+                            // console.log({scopeId})
+                        }
+    
+                        if (directive.usesChildren) shouldParseChildren = false
+                    } else {
+                        console.error(`Unknown directive ${directiveName} (full directive ${name})`)
+                        htmlString += ` ${name}="${value}"`
                     }
-
-                    if (directive.usesChildren) shouldParseChildren = false
                 } else {
-                    console.error(`Unknown directive ${directiveName} (full directive ${name})`)
                     htmlString += ` ${name}="${value}"`
                 }
             } else {
                 htmlString += ` ${name}="${value}"`
             }
-        } else {
-            htmlString += ` ${name}="${value}"`
         }
     }
     htmlString += `>`
@@ -176,8 +186,11 @@ const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnor
 
     if (!isVoid) {
         if (shouldParseChildren) {
-            const children = element.childNodes as unknown as HTMLElement[]
+            const content = element.content ?? []
+            const children = Array.isArray(content) ? content : [content]
+            // if (!Array.isArray(children)) throw Error("content must be an array")
             for (const child of children) {
+                if (Array.isArray(child)) throw Error("content must be an array")
                 const [childHTML, childHydration] = compile(child, compilerOptions, shouldIgnore, scopeId, staticScope)
                 htmlString += childHTML
                 hydrationString += childHydration
@@ -190,12 +203,14 @@ const compile = (element: Element, compilerOptions: CompilerOptions, shouldIgnor
     return [htmlString, hydrationString]
 }
 
-export const parseTimber = (rawHtml: string, compilerOptions: CompilerOptions) => {
+export const parseTimber = (rawHtml: string, compilerOptions: CompilerOptions, defaultState = {}) => {
     nextHydrationId = 0
-    const root: HTMLElement = parse(rawHtml.trim()) as unknown as HTMLElement;
+    const root = parser(rawHtml.trim())[0];
     // console.log(root.nodeType);
     // console.log(root["structure"])
-    const [html, hydration] = compile(root.firstChild as Element, compilerOptions)
+    // console.log({root})
+    // if (Array.isArray(root)) throw Error()
+    const [html, hydration] = compile(root, compilerOptions, false, null, "__defaultScope__")
     // console.log(`
     // <body>
     // ${html}
@@ -221,6 +236,8 @@ export const parseTimber = (rawHtml: string, compilerOptions: CompilerOptions) =
     window.addEventListener('timber-init', () => {
         const {handleDirective} = Timber
         let selectorTarget = document;
+        const { makeScopeProxy } = Timber
+        const __defaultScope__ = makeScopeProxy(${serialize(defaultState)})
         ${hydration}
     })
     </script>`
@@ -231,15 +248,16 @@ export const parseTimber = (rawHtml: string, compilerOptions: CompilerOptions) =
 
 const compileToWebComponent = (rawHtml: string, compilerOptions: CompilerOptions, componentName?: string) => {
     nextHydrationId = 0
-    const root: HTMLElement = parse(rawHtml.trim()) as unknown as HTMLElement;
+    const root = parser(rawHtml.trim());
     // console.log(root.nodeType);
     // console.log(root["structure"])
-    const component = root.firstChild! as Element
-    if (!componentName) componentName = component.getAttribute("x-component") ?? undefined
+    const component = root[0]
+    if (typeof component === "string" || typeof component === "number") throw Error("cannot compile string")
+    if (!componentName) componentName = component.attrs!["x-component"].toString() ?? undefined
     if (!componentName) {
         throw Error("Timber component templates must specify a component name using x-component='component-name'")
     }
-    const propsObject = Object.fromEntries(Object.entries(component.attributes).filter(([key, _]) => key !== 'x-component'))
+    const propsObject = Object.fromEntries(Object.entries(component.attrs!).filter(([key, _]) => key !== 'x-component'))
     const props = Object.keys(propsObject).map(key => {
         const segments = key.split(':')
         if (segments.length === 2) {
@@ -261,9 +279,13 @@ const compileToWebComponent = (rawHtml: string, compilerOptions: CompilerOptions
         return { type, prop, default: val}
     }) as unknown as any[]
     // console.log([component.firstChild])
-    const styles = component.querySelector("style")?.["text"] ?? ""
+    if (!Array.isArray(component.content)) throw Error("e")
+    const styleTag = component.content.filter((el) => {
+        return !Array.isArray(el) && typeof el === "object" && el.tag === "text"
+    })[0] as NodeTag
+    const styles = styleTag?.content?.[0] ?? ""//.querySelector("style")?.["text"] ?? ""
     console.log({styles})
-    const [html, hydration] = compile(component.firstChild as Element, compilerOptions, false, null, '$scope')
+    const [html, hydration] = compile(component, compilerOptions, false, null, '$scope')
 
     const escapedComponentName = componentName.replaceAll("-", "_")
 
@@ -360,9 +382,9 @@ export const compileComponent = (componentName: string, compilerOptions: Compile
 // writeFileSync("counter.cjs", compileToWebComponent(counterHTML))
 
 // writeFileSync("timber-counter.cjs", compileComponent("timber-clicker"))
-// writeFileSync("index.compiled.html", parseTimber(readFileSync("./components/index.html").toString(), {
-//     componentResolution: "component-folder",
-//     definedWebComponents: new Set(),
-//     loadedComponents: new Set()
-// }))
+writeFileSync("index.compiled.html", parseTimber(readFileSync("./components/index.html").toString(), {
+    componentResolution: "component-folder",
+    definedWebComponents: new Set(),
+    loadedComponents: new Set()
+}))
 // console.log(body)

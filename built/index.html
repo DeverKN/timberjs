@@ -4,10 +4,8 @@
     </head>
     <body>
     <div data-hydration-id="1">
-    <div data-hydration-id="2">
-        <input data-hydration-id="3">
-        <a data-hydration-id="4">Go to <span data-hydration-id="5"></span></a>
-    </div>
+    <button data-hydration-id="2">-</button><button data-hydration-id="3">+</button>
+    <div data-hydration-id="4"></div>
 </div>
     </body>
     <script src="../timberjs/runtime/module.ts" type="module"></script>
@@ -15,46 +13,82 @@
     window.addEventListener('timber-init', () => {
         const {handleDirective} = Timber
         let selectorTarget = document;
+        const { makeScopeProxy } = Timber
+        const __defaultScope__ = makeScopeProxy({count:10})
         
-                    handleDirective("x-scope",
+                    handleDirective("x-on",
                     selectorTarget.querySelector("[data-hydration-id='2']"),
-                    {dataGetter:function anonymous(additionalGlobals = {}
+                    {event:`click`,
+handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return { to: '/counter' }
+                                return count--
                             }
 },
-scopeId:`__scope_1`},
-                    'null'
+options:{},
+target:`self`},
+                    __defaultScope__
                     );
                     
-                    handleDirective("x-model",
+                    handleDirective("x-on",
                     selectorTarget.querySelector("[data-hydration-id='3']"),
-                    {boundVal:`to`},
-                    '__scope_1'
-                    );
-                    
-                    handleDirective("x-bind",
-                    selectorTarget.querySelector("[data-hydration-id='4']"),
-                    {attributeName:`href`,
-boundValueGetter:function anonymous(additionalGlobals = {}
+                    {event:`click`,
+handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return to
+                                return count++
                             }
-}},
-                    '__scope_1'
+},
+options:{},
+target:`self`},
+                    __defaultScope__
                     );
                     
+                    handleDirective("x-for",
+                    selectorTarget.querySelector("[data-hydration-id='4']"),
+                    {getIterable:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count
+                            }
+},
+type:`item`,
+indexName:`i`,
+itemName:`item`,
+arrayNames:undefined,
+objectNames:undefined,
+keyBy:undefined},
+                    __defaultScope__
+                    , ($scope) => {
+            const template = document.createElement('template');
+            template.innerHTML = `<div data-hydration-id="5">#<span data-hydration-id="6"></span> = <span data-hydration-id="7"></span></div>`;
+            const clone = template.content
+            let selectorTarget = clone
+            
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='5']"),
+                selectorTarget.querySelector("[data-hydration-id='6']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return  to 
+                                return  i 
                             }
 }}, 
-                '__scope_1');
+                $scope);
                 
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='7']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return  item 
+                            }
+}}, 
+                $scope);
+                
+            const el = clone.firstChild
+            console.log({template, clone, el})
+            return el
+        });
+                    
     })
     </script>

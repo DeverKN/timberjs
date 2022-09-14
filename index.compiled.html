@@ -1,24 +1,26 @@
 
+    <head>
+        <link rel="icon" href="data:,">
+    </head>
     <body>
-    <div data-hydration-id="1">
-    <timber-clicker data-hydration-id="7" label="Count = "></timber-clicker>
-    <timber-clicker data-hydration-id="8" label="Coolness Rating = "></timber-clicker>
-</div>
+    <div data-hydration-id="1"><timber-clicker data-hydration-id="11" label="Count = "></timber-clicker><timber-clicker data-hydration-id="12" label="Coolness Rating = "></timber-clicker></div>
     </body>
-    <script src="/timberjs/runtime/module.ts" type="module"></script>
+    <script src="../timberjs/runtime/module.ts" type="module"></script>
     <script>
     window.addEventListener('timber-init', () => {
         const {handleDirective} = Timber
         let selectorTarget = document;
+        const { makeScopeProxy } = Timber
+        const __defaultScope__ = makeScopeProxy({})
         
         (() => {
             const hydrate_timber_clicker = (element, $scope) => {
                 const { handleDirective } = Timber
                 let selectorTarget = element
                 
-                    handleDirective("x-on",
-                    selectorTarget.querySelector("[data-hydration-id='3']"),
-                    {event:`click`,
+                        handleDirective("x-on",
+                        selectorTarget.querySelector("[data-hydration-id='8']"),
+                        {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
@@ -27,32 +29,12 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                    $scope
-                    );
-                    
-                handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='4']"),
-                {textCallback:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return  label 
-                            }
-}}, 
-                $scope);
-                
-                handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='5']"),
-                {textCallback:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return  count 
-                            }
-}}, 
-                $scope);
-                
-                    handleDirective("x-on",
-                    selectorTarget.querySelector("[data-hydration-id='6']"),
-                    {event:`click`,
+                        $scope
+                        );
+                        
+                        handleDirective("x-on",
+                        selectorTarget.querySelector("[data-hydration-id='9']"),
+                        {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
@@ -61,9 +43,9 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                    $scope
-                    );
-                    
+                        $scope
+                        );
+                        
             }
     
             class timber_clicker extends HTMLElement {
@@ -81,7 +63,7 @@ target:`self`},
                 connectedCallback() {
                     this.attachShadow({mode: 'open'});
                     const wrapper = document.createElement('template');
-                    wrapper.innerHTML = `<div data-hydration-id="1"><button data-hydration-id="3">-</button><span data-hydration-id="4"></span><span data-hydration-id="5"></span><button data-hydration-id="6">+</button></div>`
+                    wrapper.innerHTML = `<template data-hydration-id="1" str:label="Count is " num:count="0"><div data-hydration-id="6"><button data-hydration-id="8"></button><button data-hydration-id="9"></button></div><style data-hydration-id="10"></style></template>`
                     const element = wrapper.content.firstElementChild
                     // Element functionality written in here
                     hydrate_timber_clicker(wrapper.content, this.$scope)
@@ -91,7 +73,7 @@ target:`self`},
                         }
                     }
                     const style = document.createElement('style');
-                    style.textContent = `button {color: red;}`
+                    style.textContent = ``
                     this.shadowRoot.append(style, element)
                 }
 
