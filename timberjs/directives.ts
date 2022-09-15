@@ -10,9 +10,9 @@ export type GlobalsObj = {
 export type DirectiveHandler<T> = (globals: GlobalsObj) => T
 
 const bindEmit = (element: Element) => {
-    const emit = (eventName: string) => {
+    const emit = (eventName: string, payload = null, options = {}) => {
         console.log({eventName})
-        element.dispatchEvent(new Event(eventName, {bubbles: true}))
+        element.dispatchEvent(new CustomEvent(eventName, { detail: payload, bubbles: true, composed: true, ...options}))
     }
     return emit
 }

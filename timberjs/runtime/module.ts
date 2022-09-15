@@ -1,3 +1,4 @@
+// import { defineCustomModel } from "../directives/compilable/xModel";
 import { init } from "../parser";
 import { makeScopeProxy } from "../state";
 import { handleDirective } from "./handleDirective";

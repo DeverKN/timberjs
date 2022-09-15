@@ -1,4 +1,7 @@
-<div>
+<div x-scope="{count: baseCount}">
     {{ msg }}
-    <timber-clicker label="Count = " [count]="baseCount"></timber-clicker>
+    {{ count }}
+    <timber-clicker label="Count = " x-model="count"></timber-clicker>
+    <button @click="count--">-</button>
+    <button @click="count++">+</button>
 </div>

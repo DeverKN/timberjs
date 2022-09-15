@@ -33,7 +33,9 @@ const loadPage = async (req, res, page) => {
                 base: `./`,
                 build: {
                 rollupOptions: {
-        
+                        output: {
+                            sourcemap: true
+                        }
                     }
                 }
             })

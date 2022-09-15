@@ -1,4 +1,4 @@
-import { DirectiveHandler, makeFuncFromString, makeGlobalsProxy } from "../../directives"
+import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { CompilableDirective } from "../compilerDirectives"
 
 type xOnData = {
@@ -23,7 +23,7 @@ export const xOn: CompilableDirective<xOnData> = {
         }
     },
     instance: (element, scope, {event, handler, options, target}) => {
-        const globals = makeGlobalsProxy(scope, element)
+        const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
         let eventTarget: EventTarget = element;
         switch (target) {
             case ("self"):

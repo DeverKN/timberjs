@@ -1,8 +1,9 @@
-<template str:label="Count is " num:count="0">
-    <div>
-        <button @click="count--">-</button>
+<template str:label="Count is " num:count="0" model="count by input">
+    <div @test="console.log('test')">
+        <button @click="(count--, $emit('input'))">-</button>
         {{ label }}{{ count }}
-        <button @click="count++">+</button>
+        <button @click="(count++, $emit('input'))">+</button>
+        <!-- <div x-effect="(count++, $emit('test'))">Click Me</div> -->
     </div>
     <style>
         button {

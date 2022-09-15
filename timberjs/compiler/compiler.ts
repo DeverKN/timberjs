@@ -12,9 +12,9 @@ const TEXT_NODE = 3
 
 let nextHydrationId = 0
 
-const handleTextNode = (textNode: Text, scopeId: string, staticScope?: string): [string, string] => {
+const handleTextNode = (text: string, scopeId: string, staticScope?: string): [string, string] => {
     const mustacheRegex = /{{([^}]*)}}/g
-    const textTemplate = textNode["text"]
+    const textTemplate = text
     // console.log({textTemplate, staticScope})
     const segments = textTemplate?.split(mustacheRegex)
 
@@ -63,7 +63,7 @@ const compile = (element: Node, compilerOptions: CompilerOptions, shouldIgnore =
     // if (typeof element === "number") throw Error("Numbers are not allowed")
     if (typeof element === "string" || typeof element === "number") {
         // console.log({scopeId, staticScope})
-        return handleTextNode(element as unknown as Text, scopeId!, staticScope)
+        return handleTextNode(element.toString(), scopeId!, staticScope)
     }
     if (typeof element !== "object") throw Error("e")
     // console.log(element["structure"])
@@ -115,7 +115,7 @@ const compile = (element: Node, compilerOptions: CompilerOptions, shouldIgnore =
         for (const [name, value] of Object.entries(element.attrs)) {
             if (!shouldIgnore) {
                 // console.log({name})
-                const xBindShorthandRegex = /\[([^.]+)\](\.(?:[^.]+))*/
+                const xBindShorthandRegex = /\[([^.]+)\](?:\.([^.]+))*/
                 const bindMatch = name.match(xBindShorthandRegex)
                 const isOn = name.startsWith("@")
                 console.log({name})
@@ -237,7 +237,7 @@ export const parseTimber = (rawHtml: string, compilerOptions: CompilerOptions, d
         const {handleDirective} = Timber
         let selectorTarget = document;
         const { makeScopeProxy } = Timber
-        const __defaultScope__ = makeScopeProxy(${serialize(defaultState)})
+        const __defaultScope__ = makeScopeProxy(${serialize(defaultState)});
         ${hydration}
     })
     </script>`
@@ -253,11 +253,14 @@ const compileToWebComponent = (rawHtml: string, compilerOptions: CompilerOptions
     // console.log(root["structure"])
     const component = root[0]
     if (typeof component === "string" || typeof component === "number") throw Error("cannot compile string")
+    const modelDirectiveRegex = /([A-z0-9\-]+) with ([A-z0-9\-]+)/
+    const [modelAttr, modelEvent] = (component.attrs?.["x-component"]?.toString()?.match(modelDirectiveRegex) ?? ["value", "input"])
     if (!componentName) componentName = component.attrs!["x-component"].toString() ?? undefined
     if (!componentName) {
         throw Error("Timber component templates must specify a component name using x-component='component-name'")
     }
-    const propsObject = Object.fromEntries(Object.entries(component.attrs!).filter(([key, _]) => key !== 'x-component'))
+    const compilerDirectiveNames = ["x-component", "model"]
+    const propsObject = Object.fromEntries(Object.entries(component.attrs!).filter(([key, _]) => !compilerDirectiveNames.includes(key)))
     const props = Object.keys(propsObject).map(key => {
         const segments = key.split(':')
         if (segments.length === 2) {
@@ -285,7 +288,10 @@ const compileToWebComponent = (rawHtml: string, compilerOptions: CompilerOptions
     })[0] as NodeTag
     const styles = styleTag?.content?.[0] ?? ""//.querySelector("style")?.["text"] ?? ""
     console.log({styles})
-    const [html, hydration] = compile(component, compilerOptions, false, null, '$scope')
+    const componentInner = component?.content[0]
+    if (typeof componentInner !== "object") throw Error()
+    if (Array.isArray(componentInner)) throw Error()
+    const [html, hydration] = compile(componentInner, compilerOptions, false, null, '$scope')
 
     const escapedComponentName = componentName.replaceAll("-", "_")
 
@@ -336,7 +342,7 @@ const compileToWebComponent = (rawHtml: string, compilerOptions: CompilerOptions
                 }
 
                 attributeChangedCallback(name, oldValue, newValue) {
-                    this.$scope[name] = this.parseAttr(name, newValue)
+                    if (newValue !== oldValue) this.$scope[name] = this.parseAttr(name, newValue)
                 }
 
                 parseAttr(name, val) {
@@ -350,9 +356,17 @@ const compileToWebComponent = (rawHtml: string, compilerOptions: CompilerOptions
                             return val
                     }
                 }
+
+                getModelOptions() {
+                    return {
+                        attributeName: '${modelAttr}',
+                        eventName: '${modelEvent}'
+                    }
+                }
                   
             }
     
+          
           customElements.define('${componentName}', ${escapedComponentName});
         })()`
 }
@@ -383,6 +397,12 @@ export const compileComponent = (componentName: string, compilerOptions: Compile
 
 // writeFileSync("timber-counter.cjs", compileComponent("timber-clicker"))
 writeFileSync("index.compiled.html", parseTimber(readFileSync("./components/index.html").toString(), {
+    componentResolution: "component-folder",
+    definedWebComponents: new Set(),
+    loadedComponents: new Set()
+}))
+
+writeFileSync("counter.compiled.html", parseTimber(readFileSync("./pages/counter/page.html").toString(), {
     componentResolution: "component-folder",
     definedWebComponents: new Set(),
     loadedComponents: new Set()
