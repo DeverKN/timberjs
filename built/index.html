@@ -165,11 +165,17 @@ target:`self`},
                             return val
                     }
                 }
+
+                getModelOptions() {
+                    return {
+                        attributeName: 'value',
+                        eventName: 'input'
+                    }
+                }
                   
             }
     
           
-          Timber.defineCustomModel('timber-clicker', 'value', 'input');
           customElements.define('timber-clicker', timber_clicker);
         })()
                         handleDirective("x-model",
