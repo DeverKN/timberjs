@@ -1,23 +1,4 @@
 
-    <head>
-        <link rel="icon" href="data:,">
-    </head>
-    <body>
-    <div data-hydration-id="1">
-    <span data-hydration-id="4"></span>
-    <span data-hydration-id="5"></span>
-    <timber-clicker data-hydration-id="7" label="Count = " count="69"></timber-clicker>
-    <button data-hydration-id="8">-</button>
-    <button data-hydration-id="9">+</button>
-</div>
-    </body>
-    <script src="../timberjs/runtime/module.ts" type="module"></script>
-    <script>
-    window.addEventListener('timber-init', () => {
-        const {handleDirective} = Timber
-        let selectorTarget = document;
-        const { makeScopeProxy } = Timber
-        const __defaultScope__ = makeScopeProxy({});
         
                         handleDirective("x-scope",
                         selectorTarget.querySelector("[data-hydration-id='1']"),
@@ -27,7 +8,7 @@ with (additionalGlobals) {
                                 return {count: baseCount}
                             }
 },
-scopeId:`__scope_0`},
+scopeId:`__scope_1`},
                         __defaultScope__
                         );
                         
@@ -39,7 +20,7 @@ with (additionalGlobals) {
                                 return  msg 
                             }
 }}, 
-                '__scope_0');
+                '__scope_1');
                 
                 handleDirective("x-text",
                 selectorTarget.querySelector("[data-hydration-id='5']"),
@@ -49,7 +30,7 @@ with (additionalGlobals) {
                                 return  count 
                             }
 }}, 
-                '__scope_0');
+                '__scope_1');
                 
         (() => {
             const hydrate_timber_clicker = (element, $scope) => {
@@ -178,7 +159,7 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                        '__scope_0'
+                        '__scope_1'
                         );
                         
                         handleDirective("x-on",
@@ -192,7 +173,7 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                        '__scope_0'
+                        '__scope_1'
                         );
                         
     })

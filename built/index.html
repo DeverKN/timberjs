@@ -1,4 +1,5 @@
 
+            
     <head>
         <link rel="icon" href="data:,">
     </head>
@@ -6,7 +7,7 @@
     <div data-hydration-id="1">
     <span data-hydration-id="4"></span>
     <span data-hydration-id="5"></span>
-    <timber-clicker data-hydration-id="7" label="Count = "></timber-clicker>
+    <timber-clicker data-hydration-id="7" label="Count = " count="69"></timber-clicker>
     <button data-hydration-id="8">-</button>
     <button data-hydration-id="9">+</button>
 </div>
@@ -17,8 +18,9 @@
         const {handleDirective} = Timber
         let selectorTarget = document;
         const { makeScopeProxy } = Timber
-        const __defaultScope__ = makeScopeProxy({msg:`Hello!`,
+            const __defaultScope__ = makeScopeProxy({msg:`Hello!`,
 baseCount:88});
+            
         
                         handleDirective("x-scope",
                         selectorTarget.querySelector("[data-hydration-id='1']"),
@@ -58,26 +60,12 @@ with (additionalGlobals) {
                 let selectorTarget = element
                 
                         handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='1']"),
-                        {event:`test`,
-handler:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return console.log('test')
-                            }
-},
-options:{},
-target:`self`},
-                        $scope
-                        );
-                        
-                        handleDirective("x-on",
                         selectorTarget.querySelector("[data-hydration-id='3']"),
                         {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return (count--, $emit('input'))
+                                return count--
                             }
 },
 options:{},
@@ -111,7 +99,7 @@ with (additionalGlobals) {
 handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return (count++, $emit('input'))
+                                return count++
                             }
 },
 options:{},
@@ -144,6 +132,9 @@ target:`self`},
                         if (timber_clicker.observedAttributes.includes(name)) {
                             this.$scope[name] = this.parseAttr(name, value)
                         }
+                        Timber.effect(() => {
+                            this.setAttribute(name, this.$scope[name])
+                        })
                     }
                     const style = document.createElement('style');
                     style.textContent = ``
@@ -151,6 +142,7 @@ target:`self`},
                 }
 
                 attributeChangedCallback(name, oldValue, newValue) {
+                    console.log({name, oldValue, newValue})
                     if (newValue !== oldValue) this.$scope[name] = this.parseAttr(name, newValue)
                 }
 
@@ -178,13 +170,6 @@ target:`self`},
           
           customElements.define('timber-clicker', timber_clicker);
         })()
-                        handleDirective("x-model",
-                        selectorTarget.querySelector("[data-hydration-id='7']"),
-                        {boundVal:`count`,
-customVal:undefined},
-                        '__scope_1'
-                        );
-                        
                         handleDirective("x-on",
                         selectorTarget.querySelector("[data-hydration-id='8']"),
                         {event:`click`,
@@ -215,3 +200,4 @@ target:`self`},
                         
     })
     </script>
+            

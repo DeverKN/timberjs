@@ -1,0 +1,19 @@
+
+    <head>
+        <link rel="icon" href="data:,">
+    </head>
+    <body>
+    <div data-hydration-id="1">
+    <span data-hydration-id="4"></span>
+    <span data-hydration-id="5"></span>
+    <timber-clicker data-hydration-id="7" label="Count = " count="69"></timber-clicker>
+    <button data-hydration-id="8">-</button>
+    <button data-hydration-id="9">+</button>
+</div>
+    </body>
+    <script src="../timberjs/runtime/module.ts" type="module"></script>
+    <script>
+    window.addEventListener('timber-init', () => {
+        const {handleDirective} = Timber
+        let selectorTarget = document;
+        const { makeScopeProxy } = Timber

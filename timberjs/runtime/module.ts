@@ -1,13 +1,13 @@
 // import { defineCustomModel } from "../directives/compilable/xModel";
 import { init } from "../parser";
-import { makeScopeProxy } from "../state";
+import { effect, makeScopeProxy } from "../state";
 import { handleDirective } from "./handleDirective";
 
 console.log("loading")
-
 window["Timber"] = {
     handleDirective,
-    makeScopeProxy
+    makeScopeProxy,
+    effect
 }
 
 // console.log(window.Timber)

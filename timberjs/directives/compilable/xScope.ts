@@ -21,6 +21,7 @@ export const xScope: CompilableDirective<xScopeData> = {
         const globals = makeGlobalsProxy(scope, makeBaseGlobals(element))
         const baseData = dataGetter(globals) ?? {}
         const newScope = makeScopeProxy(baseData, scope)
+        newScope['$root'] = element
         element.dataset.scopeId = scopeId
         scopes.set(scopeId, newScope)
         return newScope

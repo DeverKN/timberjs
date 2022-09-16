@@ -86,10 +86,11 @@ export const xModel: CompilableDirective<xModelData> = {
                     break;
                 default:
                     // const selectElement = element as HTMLSelectElement
+                    console.log(element['getModelOptions'])
                     const { attributeName, eventName } = element['getModelOptions']() ?? {attributeName: 'value', eventName: 'input'}
                     // if (customModels)
 
-                    console.log({attributeName, eventName})
+                    console.log({element, attributeName, eventName})
                     element.addEventListener(eventName, () => {
                         const newVal = element.getAttribute(attributeName)
                         scope[boundVal] = newVal
