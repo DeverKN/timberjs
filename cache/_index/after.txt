@@ -1,27 +1,4 @@
 
-            
-    <head>
-        <link rel="icon" href="data:,">
-    </head>
-    <body>
-    <div data-hydration-id="1">
-    Hello <span data-hydration-id="3"></span>!
-    <timber-clicker data-hydration-id="7" label="Count = "></timber-clicker>
-    <timber-clicker data-hydration-id="8" label="Coolness Rating = "></timber-clicker>
-    <timber-first data-hydration-id="17">
-        <span data-hydration-id="18" slot="second"><span data-hydration-id="20"></span></span>
-        <span data-hydration-id="21" slot="first"></span>
-    </timber-first>
-</div>
-    </body>
-    <script src="../timberjs/runtime/module.ts" type="module"></script>
-    <script>
-    window.addEventListener('timber-init', () => {
-        const {handleDirective} = Timber
-        let selectorTarget = document;
-        const { makeScopeProxy } = Timber
-            const __defaultScope__ = makeScopeProxy({name:`Dever`});
-            
         
                 handleDirective("x-text",
                 selectorTarget.querySelector("[data-hydration-id='3']"),
@@ -106,15 +83,15 @@ target:`self`},
                     wrapper.innerHTML = `<div data-hydration-id="1"><button data-hydration-id="3">-</button><span data-hydration-id="4"></span><span data-hydration-id="5"></span><button data-hydration-id="6">+</button><!-- <div x-effect="(count++, $emit('test'))">Click Me</div> --></div>`
                     const element = wrapper.content.firstElementChild
 
-                    // const slots = Array.from(this.querySelectorAll('slot'))
-                    // const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
-                    //     return [slotEl.getAttribute('name'), slotEl]
-                    // }))
+                    const slots = Array.from(this.querySelectorAll('slot'))
+                    const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
+                        return [slotEl.getAttribute('name'), slotEl]
+                    }))
 
-                    // this.replaceChildren()
+                    this.replaceChildren()
 
-                    // this.$scope.$slots = slots
-                    // this.$scope.$namedSlots = namedSlots
+                    this.$scope.$slots = slots
+                    this.$scope.$namedSlots = namedSlots
 
                     for (const {name, value} of this.attributes) {
                         if (timber_clicker.observedAttributes.includes(name)) {
@@ -169,6 +146,29 @@ target:`self`},
                 const { handleDirective } = Timber
                 let selectorTarget = element
                 
+                        handleDirective("x-effect",
+                        selectorTarget.querySelector("[data-hydration-id='3']"),
+                        {effectFunc:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return console.log({$slots})
+                            }
+}},
+                        $scope
+                        );
+                        
+                handleDirective("x-html",
+                selectorTarget.querySelector("[data-hydration-id='4']"),
+                {htmlCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return  $slots[0] 
+                            }
+},
+isTimber:false,
+isElement:true}, 
+                $scope);
+                
             }
     
             class timber_first extends HTMLElement {
@@ -186,18 +186,18 @@ target:`self`},
                 connectedCallback() {
                     this.attachShadow({mode: 'open'});
                     const wrapper = document.createElement('template');
-                    wrapper.innerHTML = `<div data-hydration-id="1"><div data-hydration-id="7"><span data-hydration-id="10" id="label">The first child is... <slot data-hydration-id="11" name="first"></slot></span></div><div data-hydration-id="12"><span data-hydration-id="15" id="label">The second child is... <slot data-hydration-id="16" name="second"></slot></span></div></div>`
+                    wrapper.innerHTML = `<div data-hydration-id="1"><span data-hydration-id="3" id="label">The first child is...</span><span data-hydration-id="4"></span></div>`
                     const element = wrapper.content.firstElementChild
 
-                    // const slots = Array.from(this.querySelectorAll('slot'))
-                    // const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
-                    //     return [slotEl.getAttribute('name'), slotEl]
-                    // }))
+                    const slots = Array.from(this.querySelectorAll('slot'))
+                    const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
+                        return [slotEl.getAttribute('name'), slotEl]
+                    }))
 
-                    // this.replaceChildren()
+                    this.replaceChildren()
 
-                    // this.$scope.$slots = slots
-                    // this.$scope.$namedSlots = namedSlots
+                    this.$scope.$slots = slots
+                    this.$scope.$namedSlots = namedSlots
 
                     for (const {name, value} of this.attributes) {
                         if (timber_first.observedAttributes.includes(name)) {
@@ -248,26 +248,14 @@ target:`self`},
           customElements.define('timber-first', timber_first);
         })();
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='20']"),
+                selectorTarget.querySelector("[data-hydration-id='19']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return 'Me!'
+                                return  'test' 
                             }
 }}, 
                 __defaultScope__);
                 
-                        handleDirective("x-text",
-                        selectorTarget.querySelector("[data-hydration-id='21']"),
-                        {textCallback:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return 'Syndey!'
-                            }
-}},
-                        __defaultScope__
-                        );
-                        
     })
     </script>
-            

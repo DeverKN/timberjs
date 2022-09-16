@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import path from 'path'
 import { dirname, join } from 'path';
 import { serialize } from '../timberjs/compiler/serialize';
+
 import { folderComponentResolver } from './resolver';
 import { compileToInjectable } from './compiler';
 
@@ -17,7 +18,7 @@ const __dirname = dirname(__filename);
 const app = express();
 
 const options = {
-    root: join(__dirname)
+    root: join(__dirname, "..")
 }
 
 const isCached = async (page) => {
@@ -34,39 +35,39 @@ const isCached = async (page) => {
 
 const loadPage = async (req, res, page) => {
     const startTime = Date.now()
-    const { default: loader } = await import(`./pages/${page}/loader.js`)
+    const { default: loader } = await import(`../pages/${page}/loader.js`)
     const loaderRes = {
         render: async (pageProps) => {
             // console.log({render: vDomNode})
             let before = ""
             let after = ""
             let fsStart = Date.now()
-            let loaded = false
-            if (await isCached(page)) {
-                try {
-                    console.log("cache hit")
-                    const [beforeBlob, afterBlob] = await Promise.all([readFile(`./cache/${page}/before.txt`), readFileSync(`./cache/${page}/after.txt`)])
-                    before = beforeBlob.toString()
-                    after = afterBlob.toString()
-                    loaded = true
-                } catch (e) {
+            // let loaded = false
+            // if (await isCached(page)) {
+            //     try {
+            //         console.log("cache hit")
+            //         const [beforeBlob, afterBlob] = await Promise.all([readFile(`./cache/${page}/before.txt`), readFileSync(`./cache/${page}/after.txt`)])
+            //         before = beforeBlob.toString()
+            //         after = afterBlob.toString()
+            //         loaded = true
+            //     } catch (e) {
 
-                }
-            }
+            //     }
+            // }
 
-            if (!loaded) {
-                console.log("cache miss");
+            // if (!loaded) {
+            //     console.log("cache miss");
                 const source = await readFile(`./pages/${page}/page.html`);
                 [before, after] = await compileToInjectable(source.toString(), {
                     componentResolver: folderComponentResolver,
                     definedWebComponents: new Set(),
                     loadedComponents: new Set()
                 })
-                writeFile(`./cache/${page}/before.txt`, before)
-                writeFile(`./cache/${page}/after.txt`, after)
-            }
-            let fsEnd = Date.now()
-            console.log(`fstime = ${fsEnd - fsStart}ms`)
+                // writeFile(`./cache/${page}/before.txt`, before)
+                // writeFile(`./cache/${page}/after.txt`, after)
+            // }
+            // let fsEnd = Date.now()
+            // console.log(`fstime = ${fsEnd - fsStart}ms`)
 
             const domString = `
             ${before}
@@ -77,8 +78,8 @@ const loadPage = async (req, res, page) => {
             writeFile(path.join(".","built",`index.html`), domString)
             let buildStart = Date.now()
             const buildOutput = await build({
-                root: path.resolve(__dirname, `./built/`),
-                base: `./`,
+                root: path.resolve(__dirname, `../built/`),
+                base: `../`,
                 build: {
                 rollupOptions: {
                         output: {
@@ -103,6 +104,7 @@ const loadPage = async (req, res, page) => {
     loader(req, loaderRes)
 
 }
+
 
 app.get("/", (req, res) => {
     loadPage(req, res, "_index")

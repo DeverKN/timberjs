@@ -22,8 +22,10 @@ export const xHTML: CompilableDirective<xHTMLData> = {
 
         effect(() => {
             if (isElement) {
+                // console.log({funcStr: htmlCallback.toString()})
                 const innerHTML = htmlCallback(globals) as Element
-                element.replaceChildren(innerHTML.cloneNode(true))
+                console.log({innerHTML})
+                element.replaceChildren(innerHTML/*.cloneNode(true)*/)
             } else {
                 const innerHTML = htmlCallback(globals) as string
                 element.innerHTML = innerHTML

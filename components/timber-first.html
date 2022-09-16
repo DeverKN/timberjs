@@ -1,0 +1,15 @@
+<template >
+    <div>
+        <div>
+            <span id="label">The first child is... <slot name="first" /></span>
+        </div>
+        <div>
+            <span id="label">The second child is... <slot name="second" /></span>
+        </div>
+    </div>
+    <style>
+        #label {
+            color: red;
+        }
+    </style>
+</template>

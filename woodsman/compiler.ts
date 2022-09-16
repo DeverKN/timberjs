@@ -1,6 +1,6 @@
-import { compile, CompilerOptions, compileToWebComponent, resetCompiler } from "../timberjs/compiler/compiler"
+import { compile, CompilerOptions, compileToWebComponent, parse, resetCompiler } from "../timberjs/compiler/compiler"
 import { readFile } from "fs/promises"
-import { parser } from "posthtml-parser"
+// import { parser } from "posthtml-parser"
 
 export const compileComponent = async (componentName: string, compilerOptions: CompilerOptions, standAlone = true) => {
     const spaceRegex = /(\n +)/g
@@ -18,7 +18,7 @@ export const compileComponent = async (componentName: string, compilerOptions: C
 
 export const compileToInjectable = async (rawHtml: string, compilerOptions: CompilerOptions) => {
     resetCompiler()
-    const root = parser(rawHtml.trim())[0];
+    const root = parse(rawHtml.trim())[0];
 
     const [html, hydration] = await compile(root, compilerOptions, false, null, "__defaultScope__")
 

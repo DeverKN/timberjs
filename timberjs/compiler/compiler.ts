@@ -1,7 +1,7 @@
 // import { parse } from 'node-html-parser';
 import { CompilableDirective, compilerDirectives } from '../directives/compilerDirectives';
 import { serialize } from './serialize';
-import { writeFileSync, readFileSync } from 'fs'
+// import { writeFileSync, readFileSync } from 'fs'
 import { xText } from '../directives/compilable/xText';
 import { xHTML } from '../directives/compilable/xHTML';
 import { Node, NodeTag, parser } from 'posthtml-parser'
@@ -14,6 +14,12 @@ let nextHydrationId = 0
 
 export const resetCompiler = () => {
     nextHydrationId = 0
+}
+
+export const parse = (htmlString: string) => {
+    return parser(htmlString, {
+        xmlMode: true
+    })
 }
 
 const handleTextNode = (text: string, scopeId: string, staticScope?: string): [string, string] => {
@@ -211,7 +217,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, s
 
 export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOptions, defaultState = {}) => {
     nextHydrationId = 0
-    const root = parser(rawHtml.trim())[0];
+    const root = parse(rawHtml.trim())[0];
     // console.log(root.nodeType);
     // console.log(root["structure"])
     // console.log({root})
@@ -255,7 +261,7 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
 
 export const compileToWebComponent = async (rawHtml: string, compilerOptions: CompilerOptions, componentName?: string) => {
     nextHydrationId = 0
-    const root = parser(rawHtml.trim());
+    const root = parse(rawHtml.trim());
     // console.log(root.nodeType);
     // console.log(root["structure"])
     const component = root[0]
@@ -269,7 +275,8 @@ export const compileToWebComponent = async (rawHtml: string, compilerOptions: Co
         throw Error("Timber component templates must specify a component name using x-component='component-name'")
     }
     const compilerDirectiveNames = ["x-component", "model"]
-    const propsObject = Object.fromEntries(Object.entries(component.attrs!).filter(([key, _]) => !compilerDirectiveNames.includes(key)))
+    const attrs = component.attrs
+    const propsObject = attrs ? Object.fromEntries(Object.entries(attrs).filter(([key, _]) => !compilerDirectiveNames.includes(key))) : {}
     const props = Object.keys(propsObject).map(key => {
         const segments = key.split(':')
         if (segments.length === 2) {
@@ -338,8 +345,17 @@ export const compileToWebComponent = async (rawHtml: string, compilerOptions: Co
                     const wrapper = document.createElement('template');
                     wrapper.innerHTML = \`${html}\`
                     const element = wrapper.content.firstElementChild
-                    // Element functionality written in here
-                    hydrate_${escapedComponentName}(wrapper.content, this.$scope)
+
+                    // const slots = Array.from(this.querySelectorAll('slot'))
+                    // const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
+                    //     return [slotEl.getAttribute('name'), slotEl]
+                    // }))
+
+                    // this.replaceChildren()
+
+                    // this.$scope.$slots = slots
+                    // this.$scope.$namedSlots = namedSlots
+
                     for (const {name, value} of this.attributes) {
                         if (${escapedComponentName}.observedAttributes.includes(name)) {
                             this.$scope[name] = this.parseAttr(name, value)
@@ -348,9 +364,14 @@ export const compileToWebComponent = async (rawHtml: string, compilerOptions: Co
                             this.setAttribute(name, this.$scope[name])
                         })
                     }
-                    this.scope.$root = element
+
+                    this.$scope.$root = element
+
+                    // Hydrate Element
+                    hydrate_${escapedComponentName}(wrapper.content, this.$scope)
                     const style = document.createElement('style');
                     style.textContent = \`${styles}\`
+
                     this.shadowRoot.append(style, element)
                 }
 
@@ -382,7 +403,7 @@ export const compileToWebComponent = async (rawHtml: string, compilerOptions: Co
     
           
           customElements.define('${componentName}', ${escapedComponentName});
-        })()`
+        })();`
 }
 
 // const counterHTML = `<template x-component='timber-counter' num:count='5' str:name='Jeff Bezos'><div x-root x-scope="{}"><button @click="count--">-</button><input x-model="name">Hello {{ name }}! Count is {{ count }}<button @click="count++">+</button><div x-for="(item, i) in count"><div>{{item}}<div/></div></div>    <style>
