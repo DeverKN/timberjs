@@ -25,5 +25,14 @@ export const xScope: CompilableDirective<xScopeData> = {
         element.dataset.scopeId = scopeId
         scopes.set(scopeId, newScope)
         return newScope
-    }
+    }/*,
+    ssrInstance: (element, scope, {dataGetter, scopeId}) => {
+        const globals = makeGlobalsProxy(scope, {})
+        const baseData = dataGetter(globals) ?? {}
+        const newScope = makeScopeProxy(baseData, scope)
+        newScope['$root'] = element
+        // element.dataset.scopeId = scopeId
+        // scopes.set(scopeId, newScope)
+        return newScope
+    }*/
 }

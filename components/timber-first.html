@@ -1,15 +1,15 @@
 <template >
-    <div>
+    <div x-context:name="'Me!'">
         <div>
-            <span id="label">The first child is... <slot name="first" /></span>
+            <span class="label">The first child is... <slot name="first"></slot></span>
         </div>
         <div>
-            <span id="label">The second child is... <slot name="second" /></span>
+            <span class="label">The second child is... <slot name="second"></slot></span>
         </div>
     </div>
     <style>
-        #label {
-            color: red;
+        .label {
+            background-color: red;
         }
     </style>
 </template>

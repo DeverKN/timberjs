@@ -84,6 +84,8 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, s
     // console.log({tag: element.tagName})
     const tagName = element.tag as string
     const {definedWebComponents, loadedComponents} = compilerOptions
+    const hydrationId = ++nextHydrationId
+    console.log({hydrationId})
     if (tagName.includes("-") && !(definedWebComponents.has(tagName) || loadedComponents.has(tagName))) {
         //Load custom component
         // if (compilerOptions.)
@@ -96,7 +98,6 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, s
     const hasIgnore = (element.attrs && element.attrs.hasOwnProperty("x-ignore")) ?? false
     shouldIgnore = shouldIgnore || hasIgnore
     if (element.attrs && element.attrs.hasOwnProperty("x-root")) shouldIgnore = false
-    const hydrationId = ++nextHydrationId
     htmlString += `<${tagName} data-hydration-id="${hydrationId}"`
     // console.log(element.attributes)
 
@@ -300,10 +301,13 @@ export const compileToWebComponent = async (rawHtml: string, compilerOptions: Co
     // console.log([component.firstChild])
     if (!Array.isArray(component.content)) throw Error("e")
     const styleTag = component.content.filter((el) => {
-        return !Array.isArray(el) && typeof el === "object" && el.tag === "text"
+        if (Array.isArray(el) || typeof el !== "object") return false 
+        // console.log({tagname: el.tag, el})
+        return el.tag === "style"
     })[0] as NodeTag
+    // console.log({styleTag})
     const styles = styleTag?.content?.[0] ?? ""//.querySelector("style")?.["text"] ?? ""
-    console.log({styles})
+    // console.log({styles})
     const componentInner = component?.content[0]
     if (typeof componentInner !== "object") throw Error()
     if (Array.isArray(componentInner)) throw Error()

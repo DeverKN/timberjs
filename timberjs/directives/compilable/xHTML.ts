@@ -1,7 +1,7 @@
 import { DirectiveHandler, makeBaseGlobals, makeFuncFromString, makeGlobalsProxy } from "../../directives"
 import { handleChild } from "../../parser"
 import { effect } from "../../state"
-import { CompilableDirective } from "../compilerDirectives"
+import { CompilableDirective, SSRElement } from "../compilerDirectives"
 
 type xHTMLData = {
     htmlCallback: DirectiveHandler<string | Element>,
@@ -35,5 +35,24 @@ export const xHTML: CompilableDirective<xHTMLData> = {
             }
         })
         return scope
-    }
+    }/*,
+    ssrInstance: (element, scope, {htmlCallback, isTimber, isElement}) => {
+        const globals = makeGlobalsProxy(scope, {})
+
+        effect(() => {
+            if (isElement) {
+                // console.log({funcStr: htmlCallback.toString()})
+                const innerHTML = htmlCallback(globals) as SSRElement// as Element
+                // console.log({innerHTML})
+                element.replaceChildren(innerHTML/*.cloneNode(true))
+            } else {
+                const innerHTML = htmlCallback(globals) as string
+                element.innerHTML = innerHTML
+            }
+            if (isTimber && element.firstChild) {
+                handleChild(element.firstChild, scope)
+            }
+        })
+        return scope
+    }*/
 }

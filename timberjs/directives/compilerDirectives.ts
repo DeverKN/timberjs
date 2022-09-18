@@ -20,10 +20,26 @@ export const compilerDirectives = new Map<string, CompilableDirective<any>>()
 
 export type FirstElementCloner = (scope: Scope) => HTMLElement;
 
+export type SSRFirstElementCloner = (scope: Scope) => SSRElement;
+
+export type SSRElement = {
+    getAttribute: (attr: string, ) => string,
+    setAttribute: (attr: string, val: string) => void,
+    appendChild: (child: SSRElement) => void,
+    attributes: [],
+    node: string,
+    replaceChildren: (...children: SSRElement[]) => void
+}
+
 export type CompilableDirective<T> = {
     middleware: (value: string, argument: string, modifiers: string[]) => T,
-    instance: (element: HTMLElement, scope: Scope, data: T, cloneFirstChild: FirstElementCloner) => void,
-    usesChildren?: true
+    instance: (element: HTMLElement, scope: Scope, data: T, cloneFirstChild: FirstElementCloner) => Scope,
+    usesChildren?: true,
+    ssrInstance?: (element: SSRElement, scope: Scope, data: T, cloneFirstChild: FirstElementCloner) => Scope
+}
+
+export const nonSSR = (element: SSRElement, scope: Scope, data: any, cloneFirstChild: FirstElementCloner) => {
+    return scope
 }
 
 

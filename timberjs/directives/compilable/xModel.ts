@@ -58,7 +58,8 @@ export const xModel: CompilableDirective<xModelData> = {
                         })
         
                         effect(() => {
-                            inputElement.setAttribute("value", scope[boundVal])
+                            inputElement.value = scope[boundVal]
+                            // inputElement.setAttribute("value", scope[boundVal])
                         })
                     }
                     break;

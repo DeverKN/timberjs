@@ -1,0 +1,31 @@
+<template>
+    <div x-scope="{todos: [{text: 'win case comp', complete: false}, {text: 'make cool slides', complete: false}], newTodo: ''}">
+        <div>
+            <input x-model="newTodo">
+        </div>
+        <button @click="(todos = [...todos, {text: newTodo, complete: false}], newTodo = '')">Add todo</button>
+        <!-- <button @click="" x-effect="console.log({newTodo})">Clear</button> -->
+        <ul>
+            <span x-for="(todo, index) in todos">
+                <li [class]="todo.complete ? 'todo-complete' : 'todo'" 
+                    @click="todos = todos.filter((_, i) => i !== index)">
+                    #{{ index + 1 }} {{todo.text}}
+                </li>
+            </span>
+        </ul>
+    </div>
+    <style>
+        .label {
+            background-color: red;
+        }
+        .todo:hover {
+            text-decoration: line-through;
+        }
+        .todo-complete {
+            text-decoration: line-through;
+        }
+        .todo-complete:hover {
+            opacity: .5;
+        }
+    </style>
+</template>

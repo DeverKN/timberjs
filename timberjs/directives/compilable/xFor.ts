@@ -116,6 +116,8 @@ export const xFor: CompilableDirective<xForData> = {
         // console.log({baseChild})
         element.replaceChildren()
 
+        let oldKeys = new Map<string, [HTMLElement, Scope]>()
+        let scopes: Scope[] = []
         effect(() => {
 
             let currChild = element.firstChild
@@ -124,8 +126,6 @@ export const xFor: CompilableDirective<xForData> = {
                             [...Array(res ?? 0).keys()] : 
                             ((Symbol.iterator in Object(res)) ? res : Object.entries(res))) as any[]
     
-            let oldKeys = new Map<string, [HTMLElement, Scope]>()
-            let scopes: Scope[] = []
             if (keyBy) {
                 //keyed
                 const newKeys = new Map<string, [HTMLElement, Scope]>()
@@ -153,14 +153,19 @@ export const xFor: CompilableDirective<xForData> = {
                 //Non-keyed
                 for (let index = 0; index < iterable.length; ++index) {
                     const item = iterable[index]
+                    console.log({iterable})
                     if (currChild) {
                         const nextChild = currChild.nextSibling
-                        updateScope(scope, item, index, type, itemName, indexName, arrayNames, objectNames)
+                        console.log({scopes})
+                        let currScope = scopes[index]
+                        updateScope(currScope, item, index, type, itemName, indexName, arrayNames, objectNames)
+                        console.log({currScope})
                         currChild = nextChild
                     } else {
                         const scopeVals = makeScope(item, index, type, itemName, indexName, arrayNames, objectNames)
                         const newScope = makeScopeProxy(scopeVals, scope)
                         const newChild = cloneElement(newScope)
+                        console.log("push")
                         scopes.push(newScope)
                         console.log({newChild})
                         element.appendChild(newChild)
@@ -171,6 +176,7 @@ export const xFor: CompilableDirective<xForData> = {
                 while (currChild) {
                     const nextChild = currChild.nextSibling
                     currChild.remove()
+                    console.log("pop")
                     scopes.pop()
                     currChild = nextChild
                 }
