@@ -24,28 +24,28 @@ export const directives = new Map<string, Directive>()
 
 // const AsyncFunction = (async function () {}).constructor;
 
-const makeContextProxy = (element: HTMLElement) => {
- return new Proxy({}, {
-    get: (target, prop, reciever) => {
-        if (typeof prop === "string") {
-            const contextProvider = (element.closest(`[data-context-name="${prop}"]`) ?? element.shadowRoot.closest(`[data-context-name="${prop}"]`)) as HTMLElement
-            const resolvedContextId = contextProvider.dataset.contextId
-            return contexts[resolvedContextId]
-        } else {
-            throw Error("Symbols cannot be used as context keys")
-        }
-    },
-    set: (target, prop, newVal, reciever) => {
-        throw Error("Cannot set properties of '$context', it is read-only")
-    }
-})
-} 
+// const makeContextProxy = (element: HTMLElement) => {
+//  return new Proxy({}, {
+//     get: (target, prop, reciever) => {
+//         if (typeof prop === "string") {
+//             const contextProvider = (element.closest(`[data-context-name="${prop}"]`) ?? element.shadowRoot.closest(`[data-context-name="${prop}"]`)) as HTMLElement
+//             const resolvedContextId = contextProvider.dataset.contextId
+//             return contexts[resolvedContextId]
+//         } else {
+//             throw Error("Symbols cannot be used as context keys")
+//         }
+//     },
+//     set: (target, prop, newVal, reciever) => {
+//         throw Error("Cannot set properties of '$context', it is read-only")
+//     }
+// })
+// } 
 
 export const makeBaseGlobals = (element: HTMLElement) => {
     return {
         $el: element,
         $emit: bindEmit(element),
-        $context: makeContextProxy(element),
+        // $context: makeContextProxy(element),
     }
 }
 

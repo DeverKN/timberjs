@@ -1,11 +1,13 @@
-import { compile, CompilerOptions, compileToWebComponent, parse, resetCompiler } from "../timberjs/compiler/compiler"
+import { compile, CompilerOptions, parse } from "../timberjs/compiler/compiler"
 import { readFile } from "fs/promises"
+import { compileToWebComponent } from "../timberjs/compiler/components/compileToWebComponent"
+import { ComponentCompiler } from "../timberjs/compiler/components/compileToTimberComponent"
 // import { parser } from "posthtml-parser"
 
-export const compileComponent = async (componentName: string, compilerOptions: CompilerOptions, standAlone = true) => {
+export const compileComponent = async (componentName: string, compilerOptions: CompilerOptions, standAlone = true, compilerFunc: ComponentCompiler) => {
     const spaceRegex = /(\n +)/g
     const componentString = (await readFile(`./components/${componentName}.html`)).toString('utf-8').replaceAll(spaceRegex, "")
-    const elementDeclaration = compileToWebComponent(componentString, compilerOptions, componentName)
+    const elementDeclaration = compilerFunc(componentString, compilerOptions, 0, componentName)
     if (standAlone) {
         return `
         window.addEventListener(("timber-init") => {
@@ -17,10 +19,9 @@ export const compileComponent = async (componentName: string, compilerOptions: C
 }
 
 export const compileToInjectable = async (rawHtml: string, compilerOptions: CompilerOptions) => {
-    resetCompiler()
     const root = parse(rawHtml.trim())[0];
 
-    const [html, hydration] = await compile(root, compilerOptions, false, null, "__defaultScope__")
+    const [html, hydration] = await compile(root, compilerOptions, 0, { staticScope: "__defaultScope__" })
 
     const before = `
     <head>

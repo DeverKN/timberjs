@@ -1,55 +1,27 @@
 
-    <head>
-        <link rel="icon" href="data:,">
-    </head>
-    <body>
-    <div data-hydration-id="1">
-    <span data-hydration-id="NaN"></span>
-    <span data-hydration-id="NaN"></span>
-    <timber-clicker data-hydration-id="NaN" label="Count = " count="69"></timber-clicker>
-    <button data-hydration-id="NaN">-</button>
-    <button data-hydration-id="NaN">+</button>
-</div>
-    </body>
-    <script src="../timberjs/runtime/module.ts" type="module"></script>
-    <script>
-    window.addEventListener('timber-init', () => {
-        const {handleDirective} = Timber
-        let selectorTarget = document;
-        const { makeScopeProxy } = Timber
-        const __defaultScope__ = makeScopeProxy({});
-        
-                        handleDirective("x-scope",
-                        selectorTarget.querySelector("[data-hydration-id='1']"),
-                        {dataGetter:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return {count: baseCount}
-                            }
-},
-scopeId:`__scope_0`},
-                        __defaultScope__
-                        );
-                        
+        __components__['timber-clicker'] = defineComponent('timber-clicker', {
+            $$hydrate: ($$el, $$scope, handleDirective) => {
+                let selectorTarget = $$el
+                
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                selectorTarget.querySelector("[data-hydration-id='1']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  msg 
                             }
 }}, 
-                'null');
+                '$$scope');
                 
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                selectorTarget.querySelector("[data-hydration-id='2']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  count 
                             }
 }}, 
-                'null');
+                '$$scope');
                 
         __components__['timber-clicker'] = defineComponent('timber-clicker', {
             $$hydrate: ($$el, $$scope, handleDirective) => {
@@ -109,9 +81,9 @@ target:`self`},
             $$propNames: ['label', 'count'],
             $$defaults: {label:'Count is ', count:'0'},
             $$types: {label:'str', count:'num'},
-        })__components__['timber_clicker'](selectorTarget.querySelector("[data-hydration-id='NaN']"))
+        })(selectorTarget.querySelector("[data-hydration-id='3']"), __components__['timber_clicker'])
                         handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                        selectorTarget.querySelector("[data-hydration-id='1']"),
                         {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
@@ -121,11 +93,11 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                        '__scope_0'
+                        $$scope
                         );
                         
                         handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                        selectorTarget.querySelector("[data-hydration-id='1']"),
                         {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
@@ -135,8 +107,19 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                        '__scope_0'
+                        $$scope
                         );
                         
-    })
-    </script>
+            },
+            $$styles: ``,
+            $$template: `<div data-hydration-id="1" data-x-style-scope='timber-clicker'>
+    <span data-hydration-id="1"></span>
+    <span data-hydration-id="2"></span>
+    <timber-clicker data-hydration-id="3" label="Count = " count="69" data-x-style-scope='timber-clicker'></timber-clicker>
+    <button data-hydration-id="1" data-x-style-scope='timber-clicker'>-</button>
+    <button data-hydration-id="1" data-x-style-scope='timber-clicker'>+</button>
+</div>`,
+            $$propNames: ['x-scope'],
+            $$defaults: {x-scope:'{count: baseCount}'},
+            $$types: {x-scope:'str'},
+        })

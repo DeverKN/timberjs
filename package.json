@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "node-html-parser": "^6.0.0",
+    "postcss": "^8.4.16",
+    "postcss-plugin-namespace": "^0.0.3",
+    "postcss-selector-namespace": "^3.0.1",
     "posthtml-parser": "^0.11.0",
     "ts-node": "^10.9.1"
   }
