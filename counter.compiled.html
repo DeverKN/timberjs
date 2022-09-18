@@ -4,11 +4,15 @@
     </head>
     <body>
     <div data-hydration-id="1">
-    <span data-hydration-id="NaN"></span>
-    <span data-hydration-id="NaN"></span>
-    <timber-clicker data-hydration-id="NaN" label="Count = " count="69"></timber-clicker>
-    <button data-hydration-id="NaN">-</button>
-    <button data-hydration-id="NaN">+</button>
+    Hello <span data-hydration-id="1"></span>!
+    <timber-clicker data-hydration-id="2" label="Count = "></timber-clicker>
+    <timber-clicker data-hydration-id="1" label="Coolness Rating = "></timber-clicker>
+    <span data-hydration-id="1" x-context:name="'Dever'">
+        <timber-first data-hydration-id="1">
+            <span data-hydration-id="1" #second="context"><span data-hydration-id="1"></span></span>
+            <span data-hydration-id="1" x-slot:first=""></span>
+        </timber-first>
+    </span>
 </div>
     </body>
     <script src="../timberjs/runtime/module.ts" type="module"></script>
@@ -19,39 +23,17 @@
         const { makeScopeProxy } = Timber
         const __defaultScope__ = makeScopeProxy({});
         
-                        handleDirective("x-scope",
-                        selectorTarget.querySelector("[data-hydration-id='1']"),
-                        {dataGetter:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return {count: baseCount}
-                            }
-},
-scopeId:`__scope_0`},
-                        __defaultScope__
-                        );
-                        
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                selectorTarget.querySelector("[data-hydration-id='1']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return  msg 
+                                return  name 
                             }
 }}, 
-                'null');
+                '__defaultScope__');
                 
-                handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='NaN']"),
-                {textCallback:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return  count 
-                            }
-}}, 
-                'null');
-                
-        __components__['timber-clicker'] = defineComponent('timber-clicker', {
+        const __component__timber_clicker = defineComponent('timber-clicker', {
             $$hydrate: ($$el, $$scope, handleDirective) => {
                 let selectorTarget = $$el
                 
@@ -109,33 +91,108 @@ target:`self`},
             $$propNames: ['label', 'count'],
             $$defaults: {label:'Count is ', count:'0'},
             $$types: {label:'str', count:'num'},
-        })__components__['timber_clicker'](selectorTarget.querySelector("[data-hydration-id='NaN']"))
-                        handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
-                        {event:`click`,
-handler:function anonymous(additionalGlobals = {}
+        })
+handleComponent("__component__timber_clicker", 
+                                selectorTarget.querySelector("[data-hydration-id='2']"),
+                                {
+                                    label: 'Count = '
+                                },
+                                {
+                                    
+                                })
+handleComponent("__component__timber_clicker", 
+                                selectorTarget.querySelector("[data-hydration-id='1']"),
+                                {
+                                    label: 'Coolness Rating = '
+                                },
+                                {
+                                    
+                                })
+
+        const __component__timber_first = defineComponent('timber-first', {
+            $$hydrate: ($$el, $$scope, handleDirective) => {
+                let selectorTarget = $$el
+                
+            },
+            $$styles: `[data-x-style-scope='timber-first'] .label {background-color: red;}`,
+            $$template: `<div data-hydration-id="1" x-context:name="'Me!'" data-x-style-scope='timber-first'><div data-hydration-id="2" data-x-style-scope='timber-first'><span data-hydration-id="2" class="label" data-x-style-scope='timber-first'>The first child is... <slot data-hydration-id="1" name="first" data-x-style-scope='timber-first'></slot></span></div><div data-hydration-id="2" data-x-style-scope='timber-first'><span data-hydration-id="2" class="label" data-x-style-scope='timber-first'>The second child is... <slot data-hydration-id="1" name="second" data-x-style-scope='timber-first'></slot></span></div></div>`,
+            $$propNames: [],
+            $$defaults: {},
+            $$types: {},
+        })
+handleComponent("__component__timber_first", 
+                                selectorTarget.querySelector("[data-hydration-id='1']"),
+                                {
+                                    
+                                },
+                                {
+                                    second: {
+                                            clone: ($scope) => {
+        const template = document.createElement('template');
+        template.innerHTML = `<span data-hydration-id="2" #second="context"><span data-hydration-id="1"></span></span>`;
+        const clone = template.content
+        let selectorTarget = clone
+        
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='1']"),
+                {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return count--
+                                return  context.name 
                             }
-},
-options:{},
-target:`self`},
-                        '__scope_0'
+}}, 
+                '$scope');
+                
+        const el = clone.firstChild
+        console.log({template, clone, el})
+        return el
+    },
+                                            binding: 'context'
+                                        },first: {
+                                            clone: ($scope) => {
+        const template = document.createElement('template');
+        template.innerHTML = `<span data-hydration-id="2" x-slot:first=""></span>`;
+        const clone = template.content
+        let selectorTarget = clone
+        
+                        handleDirective("x-text",
+                        selectorTarget.querySelector("[data-hydration-id='2']"),
+                        {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return 'Syndey!'
+                            }
+}},
+                        $scope
                         );
                         
-                        handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
-                        {event:`click`,
-handler:function anonymous(additionalGlobals = {}
+        const el = clone.firstChild
+        console.log({template, clone, el})
+        return el
+    },
+                                            binding: ''
+                                        }
+                                })
+
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='1']"),
+                {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return count++
+                                return  context.name 
                             }
-},
-options:{},
-target:`self`},
-                        '__scope_0'
+}}, 
+                '__defaultScope__');
+                
+                        handleDirective("x-text",
+                        selectorTarget.querySelector("[data-hydration-id='1']"),
+                        {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return 'Syndey!'
+                            }
+}},
+                        __defaultScope__
                         );
                         
     })

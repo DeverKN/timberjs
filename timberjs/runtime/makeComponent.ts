@@ -37,10 +37,9 @@ export const defineComponent = (name: string, options: ComponentOptions) => {
     const templateElement = document.createElement('template')
     templateElement.innerHTML = $$template
     const template = templateElement.content.firstElementChild
-    const instance = (scope: Scope, props: PropsObj, slots: any[], namedSlots: any[]) => {
+    const instance = (scope: Scope, props: PropsObj, slots: any[]) => {
         const instanceEl = template.cloneNode() as Element
         scope.$slots = slots
-        scope.$namedSlots = namedSlots
         $$hydrate(instanceEl, scope, handleDirective)
     }
 

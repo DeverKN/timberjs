@@ -78,6 +78,36 @@ export type AdditionalCompileOptions = {
     additionalAttrs?: string[]
 }
 
+type SlotObj = {
+    [slotName: string]: SlotDetails
+}
+
+type SlotDetails = {
+    cloneBody: string,
+    slotBinding: string
+}
+
+const makeCloneFunc = async (el: Node, compilerOptions: CompilerOptions, nextHydrationId: number, additionalOptions: AdditionalCompileOptions): Promise<[string, number]> => {
+    const { shouldIgnore, scopeId } = additionalOptions
+    const [childHTML, childHydration, newNextHydrationId] = await compile(el, compilerOptions, nextHydrationId, {
+        shouldIgnore, 
+        scopeId, 
+        staticScope: '$scope'
+    })
+    nextHydrationId = newNextHydrationId
+    const cloneFirstChild = `($scope) => {
+        const template = document.createElement('template');
+        template.innerHTML = \`${childHTML}\`;
+        const clone = template.content
+        let selectorTarget = clone
+        ${childHydration}
+        const el = clone.firstChild
+        console.log({template, clone, el})
+        return el
+    }`
+    return [cloneFirstChild, nextHydrationId]
+}
+
 export const compile = async (element: Node, compilerOptions: CompilerOptions, nextHydrationId: number, additionalOptions: AdditionalCompileOptions): Promise<CompilerReturn> => {
     // console.log({scopeId, staticScope})
     // if (typeof element === "number") throw Error("Numbers are not allowed")
@@ -111,7 +141,43 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         }
 
         if (componentType === 'Timber') {
-            hydrationString += `handleComponent(__component__${escapeComponentName(tagName)}", selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"))`
+            const content = element.content ?? []
+            const children = Array.isArray(content) ? content : [content]
+            const defaultSlot = []
+            const slotItems: SlotObj = {}
+            for (const child of children) {
+                const isObject = typeof child === "object"
+                const isArray = Array.isArray(child)
+                if (isObject && !isArray) {
+                    const [slotDirectiveName, slotBinding] = Object.entries(child.attrs).find(([name, val]) => {
+                        return name.startsWith("#") || name.startsWith("x-slot")
+                    })
+                    const [_, slotName] = slotDirectiveName.split(slotDirectiveName.startsWith("#") ? "#" : ":")
+                    console.log({slotDirectiveName, slotName, slotBinding})
+                    const [cloneBody, newNextHydrationId] = await makeCloneFunc(child, compilerOptions, nextHydrationId, additionalOptions)
+                    nextHydrationId = newNextHydrationId
+                    slotItems[slotName] = {
+                        cloneBody,
+                        slotBinding: slotBinding.toString()
+                    }
+                }
+            }
+            const props = element.attrs ?? {}
+            hydrationString += `handleComponent("__component__${escapeComponentName(tagName)}", 
+                                selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"),
+                                {
+                                    ${Object.entries(props).map(([name, val]) => {
+                                        return `${name}: '${val}'`
+                                    })}
+                                },
+                                {
+                                    ${Object.entries(slotItems).map(([name, {cloneBody, slotBinding}]) => {
+                                        return `${name}: {
+                                            clone: ${cloneBody},
+                                            binding: '${slotBinding}'
+                                        }`
+                                    }).join(',')}
+                                })\n`
         }
     }
     const isVoid = voidElements.includes(tagName)
@@ -125,25 +191,10 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
     let cloneFirstChild = "() => {}"
     const firstChild = element.content?.[0]
     // console.log({firstChild})
-    if (firstChild && firstChild.nodeType !== TEXT_NODE) {
-        // compile(component.firstChild as Element, false, null, '$scope')
-        // console.log("with $scope")
-        const [childHTML, childHydration, newNextHydrationId] = await compile(firstChild, compilerOptions, nextHydrationId, {
-            shouldIgnore, 
-            scopeId, 
-            staticScope: '$scope'
-        })
+    if (firstChild && firstChild.nodeType !== TEXT_NODE) {        
+        const [clone, newNextHydrationId] = await makeCloneFunc(firstChild, compilerOptions, nextHydrationId, additionalOptions)
         nextHydrationId = newNextHydrationId
-        cloneFirstChild = `($scope) => {
-            const template = document.createElement('template');
-            template.innerHTML = \`${childHTML}\`;
-            const clone = template.content
-            let selectorTarget = clone
-            ${childHydration}
-            const el = clone.firstChild
-            console.log({template, clone, el})
-            return el
-        }`
+        cloneFirstChild = clone
     }
 
     let shouldParseChildren = true;
@@ -315,7 +366,7 @@ console.log("test")
 try {
     (async () => {
         console.log("compile")
-        const compiled = await parseTimber(readFileSync("./pages/counter/page.html").toString().trim(), {
+        const compiled = await parseTimber(readFileSync("./pages/_index/page.html").toString().trim(), {
             componentCompiler: compileToTimberComponent,
             componentResolver: folderComponentResolver,
             definedWebComponents: new Set(),

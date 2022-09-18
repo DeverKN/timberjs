@@ -4,8 +4,8 @@
     <timber-clicker label="Coolness Rating = " />
     <span x-context:name="'Dever'">
         <timber-first>
-            <span slot="second">{{ $context.name }}</span>
-            <span slot="first" x-text="'Syndey!'" />
+            <span #second="context">{{ context.name }}</span>
+            <span x-slot:first x-text="'Syndey!'" />
         </timber-first>
     </span>
 </div>

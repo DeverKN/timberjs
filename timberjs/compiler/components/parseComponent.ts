@@ -17,7 +17,9 @@ type ComponentInfo = {
 }
 
 export const escapeComponentName = (componentName: string): string => {
-    return componentName.replaceAll("-", "_")
+    const escapedComponentName = componentName.replaceAll("-", "_")
+    // console.log({escapedComponentName, componentName})
+    return escapedComponentName
 }
 
 export const parseComponent = (rawHtml: string, componentName: string): ComponentInfo => {
