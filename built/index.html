@@ -5,13 +5,13 @@
     </head>
     <body>
     <div data-hydration-id="1">
-    Hello <span data-hydration-id="3"></span>!
-    <timber-clicker data-hydration-id="4" label="Count = "></timber-clicker>
-    <timber-clicker data-hydration-id="7" label="Coolness Rating = "></timber-clicker>
-    <span data-hydration-id="8" x-context:name="'Dever'">
-        <timber-first data-hydration-id="9">
-            <span data-hydration-id="17" slot="second"><span data-hydration-id="19"></span></span>
-            <span data-hydration-id="20" slot="first"></span>
+    Hello <span data-hydration-id="1"></span>!
+    <timber-clicker data-hydration-id="2" label="Count = "></timber-clicker>
+    <timber-clicker data-hydration-id="1" label="Coolness Rating = "></timber-clicker>
+    <span data-hydration-id="1" x-context:name="'Dever'">
+        <timber-first data-hydration-id="1">
+            <span data-hydration-id="1" #second="context"><span data-hydration-id="1"></span></span>
+            <span data-hydration-id="1" x-slot:first=""></span>
         </timber-first>
     </span>
 </div>
@@ -27,22 +27,21 @@ firstName:`Me!`});
             
         
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='3']"),
+                selectorTarget.querySelector("[data-hydration-id='1']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  name 
                             }
 }}, 
-                __defaultScope__);
+                '__defaultScope__');
                 
-        (() => {
-            const hydrate_timber_clicker = (element, $scope) => {
-                const { handleDirective } = Timber
-                let selectorTarget = element
+        const __component__timber_clicker = Timber.defineComponent({
+            $$hydrate: ($$el, $$scope, handleDirective) => {
+                let selectorTarget = $$el
                 
                         handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='3']"),
+                        selectorTarget.querySelector("[data-hydration-id='1']"),
                         {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
@@ -52,31 +51,31 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                        $scope
+                        $$scope
                         );
                         
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='4']"),
+                selectorTarget.querySelector("[data-hydration-id='1']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  label 
                             }
 }}, 
-                $scope);
+                '$$scope');
                 
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='5']"),
+                selectorTarget.querySelector("[data-hydration-id='2']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
                                 return  count 
                             }
 }}, 
-                $scope);
+                '$$scope');
                 
                         handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='6']"),
+                        selectorTarget.querySelector("[data-hydration-id='3']"),
                         {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
@@ -86,182 +85,142 @@ with (additionalGlobals) {
 },
 options:{},
 target:`self`},
-                        $scope
+                        $$scope
                         );
                         
+            },
+            $$styles: `[data-x-style-scope='timber-clicker'] button {color: red;}`,
+            $$template: `<div data-hydration-id="1" data-x-style-scope='timber-clicker'><button data-hydration-id="1" data-x-style-scope='timber-clicker'>-</button><span data-hydration-id="1"></span><span data-hydration-id="2"></span><button data-hydration-id="3" data-x-style-scope='timber-clicker'>+</button><!-- <div x-effect="(count++, $emit('test'))">Click Me</div> --></div>`,
+            $$propNames: ['label', 'count'],
+            $$defaults: {label:'Count is ', count:'0'},
+            $$types: {label:'str', count:'num'},
+            $$model: {
+                event: 'input',
+                attr: 'value'
             }
-    
-            class timber_clicker extends HTMLElement {
+        })
+Timber.handleComponent(__component__timber_clicker, 
+                                selectorTarget.querySelector("[data-hydration-id='2']"),
+                                /*scope*/__defaultScope__,
+                                /*props*/{
+                                    label: 'Count = '
+                                },
+                                /*bindings*/{
 
-                static get observedAttributes() { return ['label','count']; }
-                static get attributeTypes() { return {label:'str',count:'num'}; }
+                                },
+                                /*events*/{
+                                    
+                                },
+                                /*slots*/{
+                                    
+                                },
+                                /*model*/{})
+Timber.handleComponent(__component__timber_clicker, 
+                                selectorTarget.querySelector("[data-hydration-id='1']"),
+                                /*scope*/__defaultScope__,
+                                /*props*/{
+                                    label: 'Coolness Rating = '
+                                },
+                                /*bindings*/{
 
-                constructor() {
-                    // Always call super first in constructor
-                    super();
-                    const { makeScopeProxy } = Timber
-                    this.$scope = makeScopeProxy({label:'Count is ',count:0})
-                }
+                                },
+                                /*events*/{
+                                    
+                                },
+                                /*slots*/{
+                                    
+                                },
+                                /*model*/{})
 
-                connectedCallback() {
-                    this.attachShadow({mode: 'open'});
-                    const wrapper = document.createElement('template');
-                    wrapper.innerHTML = `<div data-hydration-id="1"><button data-hydration-id="3">-</button><span data-hydration-id="4"></span><span data-hydration-id="5"></span><button data-hydration-id="6">+</button><!-- <div x-effect="(count++, $emit('test'))">Click Me</div> --></div>`
-                    const element = wrapper.content.firstElementChild
-
-                    // const slots = Array.from(this.querySelectorAll('slot'))
-                    // const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
-                    //     return [slotEl.getAttribute('name'), slotEl]
-                    // }))
-
-                    // this.replaceChildren()
-
-                    // this.$scope.$slots = slots
-                    // this.$scope.$namedSlots = namedSlots
-
-                    for (const {name, value} of this.attributes) {
-                        if (timber_clicker.observedAttributes.includes(name)) {
-                            this.$scope[name] = this.parseAttr(name, value)
-                        }
-                        Timber.effect(() => {
-                            this.setAttribute(name, this.$scope[name])
-                        })
-                    }
-
-                    this.$scope.$root = element
-
-                    // Hydrate Element
-                    hydrate_timber_clicker(wrapper.content, this.$scope)
-                    const style = document.createElement('style');
-                    style.textContent = `button {color: red;}`
-
-                    this.shadowRoot.append(style, element)
-                }
-
-                attributeChangedCallback(name, oldValue, newValue) {
-                    console.log({name, oldValue, newValue})
-                    if (newValue !== oldValue) this.$scope[name] = this.parseAttr(name, newValue)
-                }
-
-                parseAttr(name, val) {
-                    const type = timber_clicker.attributeTypes[name]
-                    switch (type) {
-                        case("bool"):
-                            return (val === 'true')
-                        case("num"):
-                            return parseFloat(val)
-                        default:
-                            return val
-                    }
-                }
-
-                getModelOptions() {
-                    return {
-                        attributeName: 'value',
-                        eventName: 'input'
-                    }
-                }
-                  
-            }
-    
-          
-          customElements.define('timber-clicker', timber_clicker);
-        })();
-        (() => {
-            const hydrate_timber_first = (element, $scope) => {
-                const { handleDirective } = Timber
-                let selectorTarget = element
+        const __component__timber_first = Timber.defineComponent({
+            $$hydrate: ($$el, $$scope, handleDirective) => {
+                let selectorTarget = $$el
                 
+            },
+            $$styles: `[data-x-style-scope='timber-first'] .label {background-color: red;}`,
+            $$template: `<div data-hydration-id="1" x-context:name="'Me!'" data-x-style-scope='timber-first'><div data-hydration-id="2" data-x-style-scope='timber-first'><span data-hydration-id="2" class="label" data-x-style-scope='timber-first'>The first child is... <slot data-hydration-id="1" name="first" data-x-style-scope='timber-first'></slot></span></div><div data-hydration-id="2" data-x-style-scope='timber-first'><span data-hydration-id="2" class="label" data-x-style-scope='timber-first'>The second child is... <slot data-hydration-id="1" name="second" data-x-style-scope='timber-first'></slot></span></div></div>`,
+            $$propNames: [],
+            $$defaults: {},
+            $$types: {},
+            $$model: {
+                event: 'input',
+                attr: 'value'
             }
-    
-            class timber_first extends HTMLElement {
+        })
+Timber.handleComponent(__component__timber_first, 
+                                selectorTarget.querySelector("[data-hydration-id='1']"),
+                                /*scope*/__defaultScope__,
+                                /*props*/{
+                                    
+                                },
+                                /*bindings*/{
 
-                static get observedAttributes() { return []; }
-                static get attributeTypes() { return {}; }
-
-                constructor() {
-                    // Always call super first in constructor
-                    super();
-                    const { makeScopeProxy } = Timber
-                    this.$scope = makeScopeProxy({})
-                }
-
-                connectedCallback() {
-                    this.attachShadow({mode: 'open'});
-                    const wrapper = document.createElement('template');
-                    wrapper.innerHTML = `<div data-hydration-id="1" x-context:name="'Me!'"><div data-hydration-id="7"><span data-hydration-id="10" class="label">The first child is... <slot data-hydration-id="11" name="first"></slot></span></div><div data-hydration-id="12"><span data-hydration-id="15" class="label">The second child is... <slot data-hydration-id="16" name="second"></slot></span></div></div>`
-                    const element = wrapper.content.firstElementChild
-
-                    // const slots = Array.from(this.querySelectorAll('slot'))
-                    // const namedSlots = Object.fromEntries(slots.filter((slotEl) => slotEl.hasAttribute('name')).map((slotEl) => {
-                    //     return [slotEl.getAttribute('name'), slotEl]
-                    // }))
-
-                    // this.replaceChildren()
-
-                    // this.$scope.$slots = slots
-                    // this.$scope.$namedSlots = namedSlots
-
-                    for (const {name, value} of this.attributes) {
-                        if (timber_first.observedAttributes.includes(name)) {
-                            this.$scope[name] = this.parseAttr(name, value)
-                        }
-                        Timber.effect(() => {
-                            this.setAttribute(name, this.$scope[name])
-                        })
-                    }
-
-                    this.$scope.$root = element
-
-                    // Hydrate Element
-                    hydrate_timber_first(wrapper.content, this.$scope)
-                    const style = document.createElement('style');
-                    style.textContent = `.label {background-color: red;}`
-
-                    this.shadowRoot.append(style, element)
-                }
-
-                attributeChangedCallback(name, oldValue, newValue) {
-                    console.log({name, oldValue, newValue})
-                    if (newValue !== oldValue) this.$scope[name] = this.parseAttr(name, newValue)
-                }
-
-                parseAttr(name, val) {
-                    const type = timber_first.attributeTypes[name]
-                    switch (type) {
-                        case("bool"):
-                            return (val === 'true')
-                        case("num"):
-                            return parseFloat(val)
-                        default:
-                            return val
-                    }
-                }
-
-                getModelOptions() {
-                    return {
-                        attributeName: 'value',
-                        eventName: 'input'
-                    }
-                }
-                  
-            }
-    
-          
-          customElements.define('timber-first', timber_first);
-        })();
+                                },
+                                /*events*/{
+                                    
+                                },
+                                /*slots*/{
+                                    second: {
+                                            clone: ($scope) => {
+        const template = document.createElement('template');
+        template.innerHTML = `<span data-hydration-id="2" #second="context"><span data-hydration-id="1"></span></span>`;
+        const clone = template.content
+        let selectorTarget = clone
+        
                 handleDirective("x-text",
-                selectorTarget.querySelector("[data-hydration-id='19']"),
+                selectorTarget.querySelector("[data-hydration-id='1']"),
                 {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return  $context.name 
+                                return  context.name 
                             }
 }}, 
-                __defaultScope__);
+                '$scope');
+                
+        const el = clone.firstChild
+        console.log({template, clone, el})
+        return el
+    },
+                                            binding: 'context'
+                                        },first: {
+                                            clone: ($scope) => {
+        const template = document.createElement('template');
+        template.innerHTML = `<span data-hydration-id="2" x-slot:first=""></span>`;
+        const clone = template.content
+        let selectorTarget = clone
+        
+                        handleDirective("x-text",
+                        selectorTarget.querySelector("[data-hydration-id='2']"),
+                        {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return 'Syndey!'
+                            }
+}},
+                        $scope
+                        );
+                        
+        const el = clone.firstChild
+        console.log({template, clone, el})
+        return el
+    },
+                                            binding: ''
+                                        }
+                                },
+                                /*model*/{})
+
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='1']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return  context.name 
+                            }
+}}, 
+                '__defaultScope__');
                 
                         handleDirective("x-text",
-                        selectorTarget.querySelector("[data-hydration-id='20']"),
+                        selectorTarget.querySelector("[data-hydration-id='1']"),
                         {textCallback:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en-us" ng-app="app">
+
+<head>
+    <style type="text/css">
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
+        }
+
+        .ng-hide {
+            display: none !important;
+        }
+
+        ng\:form {
+            display: block;
+        }
+    </style>
+    <title>Search Results: IU Directory</title>
+    <meta name="description" content="Find people and departments at IU" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="msapplication-config" content="none" />
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link rel="stylesheet" href="/Content/bootstrap.css" />
+
+    <link rel="stylesheet" type="text/css" href="https://fonts.iu.edu/style.css?family=BentonSans:regular,bold%7CBentonSansCond:regular%7CGeorgiaPro:regular">
+    <!-- uits header -->
+    <!-- <link rel="stylesheet" type="text/css" href="https://uits.iu.edu/css/all.css?v=1477686098"> -->
+    <!-- uits header -->
+    <link rel="stylesheet" type="text/css" href="https://assets.iu.edu/web/2.x/css/global.css">
+    <!--<link rel="stylesheet" type="text/css" href="https://assets.iu.edu/brand/2.x/brand.css">-->
+    <link rel="stylesheet" type="text/css" href="https://assets.iu.edu/brand/3.x/brand.css">
+    <link rel="stylesheet" type="text/css" href="https://assets.iu.edu/web/fonts/icon-font.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/Content/itco/css/style.css" />
+    <script src="/Scripts/modernizr-2.8.3.js"></script>
+    <script src="/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="/Scripts/jquery.validate.min.js"></script>
+    <script src="/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="/Scripts/bootstrap.min.js"></script>
+    <script src="/Scripts/respond.min.js"></script>
+
+    <script src="/Content/itco/js/scripts.js"></script>
+    <script src="https://uits.iu.edu/js/vendor/vendor.js?v=1461290631"></script>
+    <script src="https://uits.iu.edu/js/app.js?v=1476754635"></script>
+    <script src="/Scripts/angular.min.js"></script>
+    <script src="/Scripts/angular-animate.min.js"></script>
+    <script src="/Scripts/angular-sanitize.min.js"></script>
+    <script src="/Scripts/lodash.min.js"></script>
+    <script src="/app/app.js"></script>
+
+    <script type="text/javascript">
+        app.factory('searchResultsData', function() {
+            return {
+                searchResultItemList: [],
+                hasTooManyResults: "False"
+            };
+        });
+    </script>
+
+</head>
+
+<body id="home" class="" ng-cloak>
+    <div class="wrap off-canvas-wrap">
+        <header>
+            <div id="skipNav" class="">
+                <a href="#content" title="jump to main content" accesskey="2" class="sr-only sr-only-focusable" onclick="$('#content').focus()">jump to main content</a>
+            </div>
+            <div id="branding-bar" class="iu" itemscope="itemscope" itemtype="http://schema.org/CollegeOrUniversity" aria-labelledby="campus-name">
+                <div class="row pad">
+                    <img src="//assets.iu.edu/brand/3.x/trident-large.png" alt="IU" />
+                    <p id="iu-campus">
+                        <a href="https://www.iu.edu" title="Indiana University">
+                            <span id="campus-name" class="show-on-desktop" itemprop="name">Indiana University</span>
+                            <span class="show-on-tablet" itemprop="name">Indiana University</span>
+                            <span class="show-on-mobile" itemprop="name">IU</span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </header>
+        <main class="no-section-nav" role="main">
+            <!-- uits.header -->
+            <div class="hero__site section">
+                <div class="row">
+                    <div class="layout">
+                        <div class="hero__branding">
+                            <h1 class="hero__title"><a href="/">IU Directory</a></h1>
+                            <p class="hero__tagline">All of IU available at your fingertips</p>
+                        </div>
+                        <a href="#" class="show-nav"><i class="fa fa-bars" aria-hidden="true"></i> Menu</a>
+                        <nav id="nav-toggle" class="hero__nav">
+                            <ul>
+                                <li><a id="nav-link-new-search" href="/">New search</a></li>
+                                <li><a id="nav-link-update-information" href="/information/update">Update information</a></li>
+                                <li><a id="nav-link-help" href="/information/search-tips">Help</a></li>
+                                <li><a id="nav-link-contact" href="mailto:onlinedirectory@iu.edu">Contact</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <div id="content" tabindex="-1">
+                <div class="container">
+
+                    <div ng-controller="SearchResultsController as vm">
+                        <section class="section breadcrumbs">
+                            <div class="row">
+                                <div class="layout">
+                                    <ul itemscope="itemscope" itemtype="http://schema.org/BreadcrumbList">
+                                        <li itemprop="itemListElement" itemscope="itemscope" itemtype="http://schema.org/ListItem"><a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+                                            <meta content="1" itemprop="position">
+                                        </li>
+                                        <li class="current" itemprop="itemListElement" itemscope="itemscope" itemtype="http://schema.org/ListItem"><span itemprop="item name">Search results</span>
+                                            <meta content="2" itemprop="position">
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="section page-title bg-none">
+                            <div class="row">
+                                <div class="layout">
+                                    <h1>Search results</h1>
+                                </div>
+                            </div>
+                            <div name="#top"></div>
+                        </section>
+                        <section class="section results" ng-show="vm.hasResults && !vm.hasTooManyResults">
+                            <div class="row">
+                                <div class="layout">
+                                    <div class="text">
+                                        <div class="results-area-header">
+                                            <h2><a href="#" class="show-filter" aria-controls="filterResults"><i id="showFilterIcon" class="fa fa-caret-up" aria-hidden="true"></i> Filtered Results</a> <small>({{vm.filteredResultsCount}} / {{vm.searchResults.length}})</small></h2>
+                                        </div>
+                                        <div class="results-area">
+                                            <div id="filterResults">
+                                                <div class="filter-buttons">
+                                                    <div class="filter-button active" ng-click="vm.setItemType('Both')">
+                                                        All Results <span class="badge">{{vm.searchResults.length}}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="filter-buttons">
+                                                    <div class="filter-button" ng-click="vm.setItemType('PersonListing')">
+                                                        <i class="fa fa-user" aria-hidden="true"></i> Individual Listings <span class="badge">{{vm.personListingsCount}}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="filter-buttons">
+                                                    <div class="filter-button" ng-click="vm.setItemType('DepartmentListing')">
+                                                        <i class="fa fa-university" aria-hidden="true"></i> Departmental Listings <span class="badge">{{vm.departmentListingsCount}}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="filter-results">
+                                                    <fieldset>
+                                                        <legend class="visually-hidden">Filter Options</legend>
+                                                        <label for="filter">Start typing to filter results:</label>
+                                                        <input id="filter" type="search" ng-model="vm.filterText" ng-keyup="vm.applyFilter($event)">
+                                                        <div class="filter-radio" role="radiogroup">
+                                                            <label for="filterTypeContains" class="filter-label" tabindex="0">
+                                            <input tabindex="-1" id="filterTypeContains" name="filterType" ng-model="vm.filterType" ng-change="vm.getFilteredResults()" value="Contains" type="radio">
+                                            Contains
+                                        </label>
+                                                            <label for="filterTypeStartsWith" class="filter-label" tabindex="0">
+                                            <input tabindex="-1" id="filterTypeStartsWith" name="filterType" ng-model="vm.filterType" ng-change="vm.getFilteredResults()" value="Starts With" type="radio">
+                                            Starts with
+                                        </label>
+                                                        </div>
+                                                    </fieldset>
+                                                </div>
+                                                <div>
+                                                    <div class="validation-summary-errors" data-valmsg-summary="true">
+                                                        <ul>
+                                                            <li>&lt;i class=&#39;fa fa-exclamation-circle&#39; aria-hidden=&#39;true&#39;&gt;&lt;/i&gt; Search text has invalid characters.</li>
+                                                            <li>Cookies must be enabled in your browser to use the search feature.</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- filter-results -->
+                                            <div class="results-list">
+                                                <ul>
+                                                    <li ng-repeat="item in vm.filteredResults">
+                                                        <a href="/{{item.URL}}">
+                                        <i class="{{item.IconClass}}" aria-hidden="true"></i> {{item.DisplayName}} ({{item.Campus}})
+                                    </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <!-- results-area -->
+                                    </div>
+                                </div>
+                                <div class="back-to-top-box"><a href="#top" class="back-to-top">Back to Top</a></div>
+                            </div>
+                        </section>
+                        <section class="" ng-show="vm.hasNoResults">
+                            <div class="row">
+                                <div class="layout">
+                                    <div class="text">
+                                        No results found.
+                                    </div>
+                                    <div>
+                                        <div class="validation-summary-errors" data-valmsg-summary="true">
+                                            <ul>
+                                                <li>&lt;i class=&#39;fa fa-exclamation-circle&#39; aria-hidden=&#39;true&#39;&gt;&lt;/i&gt; Search text has invalid characters.</li>
+                                                <li>Cookies must be enabled in your browser to use the search feature.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="" ng-show="vm.hasTooManyResults">
+                            <div class="row">
+                                <div class="layout">
+                                    <div class="text">
+                                        Too many people were found. Please adjust search options to reduce the number of results.
+                                    </div>
+                                    <div>
+                                        <div class="validation-summary-errors" data-valmsg-summary="true">
+                                            <ul>
+                                                <li>&lt;i class=&#39;fa fa-exclamation-circle&#39; aria-hidden=&#39;true&#39;&gt;&lt;/i&gt; Search text has invalid characters.</li>
+                                                <li>Cookies must be enabled in your browser to use the search feature.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                </div>
+                <div id="push"></div>
+            </div>
+        </main>
+        <!-- footer -->
+        <section class="section bg-cream dark belt" style="padding-top: 40px;">
+            <div class="row pad">
+                <div class="belt-box">
+                    <h2 class="visually-hidden">Contact</h2>
+                    <ul class="belt-nav">
+                        <li class="belt-contact">Need help with the directory? <a class="external" href="mailto:onlinedirectory@iu.edu">Contact us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <footer id="footer" role="contentinfo" itemscope="itemscope" itemtype="http://schema.org/CollegeOrUniversity">
+            <div class="footer-box">
+                <p class="signature">
+                    <a href="https://www.iu.edu" class="signature-link signature-img"><img src="//assets.iu.edu/brand/3.2.x/iu-sig-formal.svg" alt="Indiana University" /></a>
+                </p>
+                <p class="copyright">
+                    <span class="line-break"><a href="https://accessibility.iu.edu/assistance" id="accessibility-link" title="Having trouble accessing this web page content? Please visit this page for assistance.">Accessibility</a> | <a href="/information/privacy" id="privacy-policy-link">Privacy Notice</a></span>
+                    <span class="hide-on-mobile"> | </span>
+                    <a href="https://www.iu.edu/copyright/index.html">Copyright</a> &#169;
+                    <script type="text/javascript">
+                        var theDate = new Date();
+                        document.write(theDate.getFullYear());
+                    </script>
+                    <span class="line-break-small">The Trustees of <a href="https://www.iu.edu/" itemprop="url"><span itemprop="name">Indiana University</span></a>
+                    </span>
+                </p>
+            </div>
+        </footer>
+    </div>
+    <!-- .inner-wrap -->
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#filter').focus();
+            var radioLabels = $('.filter-label');
+            radioLabels.click(function(e) {
+                $('#filter').focus();
+            });
+            radioLabels.keydown(function(e) {
+                if (e.which == 13 || e.which == 32) {
+                    $(this).click();
+                }
+            });
+            $('.filter-button').each(function() {
+                var $that = $(this);
+                $that.on('click', function(e) {
+                    $('.filter-button').removeClass('active');
+                    $that.addClass('active');
+                });
+            });
+            $('.hero__site').addClass('hero__site--small');
+        });
+    </script>
+
+</body>
+
+</html>

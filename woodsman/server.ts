@@ -11,6 +11,7 @@ import { serialize } from '../timberjs/compiler/serialize';
 
 import { folderComponentResolver } from './resolver';
 import { compileToInjectable } from './compiler';
+import { compileToTimberComponent } from '../timberjs/compiler/components/compileToTimberComponent';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -61,7 +62,9 @@ const loadPage = async (req, res, page) => {
                 [before, after] = await compileToInjectable(source.toString(), {
                     componentResolver: folderComponentResolver,
                     definedWebComponents: new Set(),
-                    loadedComponents: new Set()
+                    loadedComponents: new Set(),
+                    componentCompiler: compileToTimberComponent,
+                    componentType: "Timber"
                 })
                 // writeFile(`./cache/${page}/before.txt`, before)
                 // writeFile(`./cache/${page}/after.txt`, after)

@@ -36,7 +36,7 @@ export const compileToTimberComponent: ComponentCompiler = async (rawHtml: strin
     const propDefaults = Object.fromEntries(Object.entries(props).map(([propName, {default: defaultVal}]) => [propName, defaultVal]))
     const propTypes = Object.fromEntries(Object.entries(props).map(([propName, {type}]) => [propName, type]))
     return `
-        const __component__${escapedComponentName} = defineComponent('${componentName}', {
+        const __component__${escapedComponentName} = Timber.defineComponent({
             $$hydrate: ($$el, $$scope, handleDirective) => {
                 let selectorTarget = $$el
                 ${hydration}
@@ -46,5 +46,9 @@ export const compileToTimberComponent: ComponentCompiler = async (rawHtml: strin
             $$propNames: [${propNames.map(name => `'${name}'`).join(', ')}],
             $$defaults: {${Object.entries(propDefaults).map((propAndDefault) => `${propAndDefault[0]}:'${propAndDefault[1]}'`).join(', ')}},
             $$types: {${Object.entries(propTypes).map((propAndType) => `${propAndType[0]}:'${propAndType[1]}'`).join(', ')}},
+            $$model: {
+                event: '${modelEvent}',
+                attr: '${modelAttribute}'
+            }
         })\n`
 }

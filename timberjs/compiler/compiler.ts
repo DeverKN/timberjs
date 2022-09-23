@@ -163,21 +163,29 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                 }
             }
             const props = element.attrs ?? {}
-            hydrationString += `handleComponent("__component__${escapeComponentName(tagName)}", 
+            hydrationString += `Timber.handleComponent(__component__${escapeComponentName(tagName)}, 
                                 selectorTarget.querySelector("[data-hydration-id='${hydrationId}']"),
-                                {
+                                /*scope*/${staticScope ? staticScope : `'${scopeId}'`},
+                                /*props*/{
                                     ${Object.entries(props).map(([name, val]) => {
                                         return `${name}: '${val}'`
                                     })}
                                 },
-                                {
+                                /*bindings*/{
+
+                                },
+                                /*events*/{
+                                    
+                                },
+                                /*slots*/{
                                     ${Object.entries(slotItems).map(([name, {cloneBody, slotBinding}]) => {
                                         return `${name}: {
                                             clone: ${cloneBody},
                                             binding: '${slotBinding}'
                                         }`
                                     }).join(',')}
-                                })\n`
+                                },
+                                /*model*/{})\n`
         }
     }
     const isVoid = voidElements.includes(tagName)
@@ -362,23 +370,23 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
 //     loadedComponents: new Set()
 // }))
 
-console.log("test")
-try {
-    (async () => {
-        console.log("compile")
-        const compiled = await parseTimber(readFileSync("./pages/_index/page.html").toString().trim(), {
-            componentCompiler: compileToTimberComponent,
-            componentResolver: folderComponentResolver,
-            definedWebComponents: new Set(),
-            loadedComponents: new Set(),
-            componentType: 'Timber'
-        })
-        writeFileSync("counter.compiled.html", compiled)
-        // console.log({compiled})
-        console.log("compiled")
-    })()
-} catch (e) {
-    console.log(e)
-}
+// console.log("test")
+// try {
+//     (async () => {
+//         console.log("compile")
+//         const compiled = await parseTimber(readFileSync("./pages/_index/page.html").toString().trim(), {
+//             componentCompiler: compileToTimberComponent,
+//             componentResolver: folderComponentResolver,
+//             definedWebComponents: new Set(),
+//             loadedComponents: new Set(),
+//             componentType: 'Timber'
+//         })
+//         writeFileSync("counter.compiled.html", compiled)
+//         // console.log({compiled})
+//         console.log("compiled")
+//     })()
+// } catch (e) {
+//     console.log(e)
+// }
 
 // console.log(body)
