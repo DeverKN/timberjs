@@ -5,6 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + TS</title>
+    <script>console.log("head")</script>
+    <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
     <div id="app">
@@ -103,12 +105,25 @@
           </div>
           
           <div x-scope>
-            <script $count="0"></script>
-            <script $decrement>() => count--</script>
-            <script $increment>() => count++</script>
+            <script x-scoped type="text/babel">
+                console.log("module")
+                import {EditorView, keymap} from "@codemirror/view"
+                import {defaultKeymap} from "@codemirror/commands"
+
+                let myView = new EditorView({
+                  doc: "hello",
+                  extensions: [keymap.of(defaultKeymap)],
+                  parent: document.getElementById("editor")
+                })
+                
+                $define.count = 0
+                $define.increment = () => count++
+                $define.decrement = () => count--
+            </script>
             <button @click="decrement()">-</button>
             {{ count }}
             <button @click="increment()">+</button>
+            <div id="editor"></div>
           </div>
         </div>
 
@@ -118,6 +133,5 @@
     <script>
       const testAlert = () => alert("test!")
     </script>
-    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

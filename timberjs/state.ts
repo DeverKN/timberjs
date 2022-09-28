@@ -14,17 +14,33 @@ export const effect = (effectFunc: Callback) => {
     effectBeingBound = null
 }
 
+// const 
+
+let nextScopeNum = 0
 export const makeScopeProxy = (baseData: object, parentScope: Scope = {}): Scope => {
+    const scopeNum = nextScopeNum++
     const listeners = new Map<string | symbol, Callback[]>()
-    
+    const addProp = (newProp, newVal) => baseData[newProp] = newVal
+    const defineProxy = new Proxy({}, {
+        set: (target, prop, value, reciever) => {
+            addProp(prop, value)
+            return true
+        }
+    })
+
+    const getScopedID = (id: string) => {
+        return `__scoped_id__${scopeNum}_${id}`
+    }
+
+    const internalKeys = ["$define", "$add", "$id"]
     return new Proxy(baseData, {
         has: (target, key) => {
-            return (key in target || key in parentScope)
+            return (key in target || key in parentScope || (typeof key === "string" && internalKeys.includes(key)))
         },
         get: (target, prop, reciever) => {
-            if (prop === "$$add") return (newProp, newVal) => {
-                Reflect.set(target, newProp, newVal, reciever)
-            }
+            if (prop === "$define") return defineProxy
+            if (prop === "$id") return addProp
+            if (prop === "$add") return addProp
             if (prop in target) {
                 if (effectBeingBound) listeners.set(prop, [...(listeners.get(prop) ?? []), effectBeingBound])
                 return Reflect.get(target, prop, reciever)
@@ -45,4 +61,8 @@ export const makeScopeProxy = (baseData: object, parentScope: Scope = {}): Scope
             return true
         }
     })
+}
+
+export const makeDefineMagic = (scope) => {
+
 }
