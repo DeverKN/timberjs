@@ -28,6 +28,12 @@ Getting user input
 
 ### Directives
 
+#### Shorthands
+
+@click="count++" is the same as x-on:click="count++"
+\[class\]="count" = x-bind:class="count"
+\$count = x-let:count
+
 ### Extending
 
 ### Compiler

@@ -34,6 +34,34 @@ addDirective("x-interval", (element, value, scope, argument, _modifiers) => {
   return scope
 })
 
+
+addDirective("x-scoped", (element, value, scope, argument, modifiers) => {
+  const globals = makeGlobalsProxy(scope, {$el: element})
+  const scopedScriptBody = element.innerHTML
+  // console.log({scopedScriptBody})
+  const scriptCallback = makeFuncFromString<void>(`(() => {${scopedScriptBody}})()`);
+  scriptCallback(globals)
+  console.log({scope})
+  element.remove()
+  // const scopedScript = document.createElement('script')
+  // scopedScript.innerHTML = scriptCallback.toString()
+
+  return scope
+})
+
+// addDirective("x-let", (element, value, scope, argument, modifiers) => {
+//   const globals = makeGlobalsProxy(scope, {$el: element})
+//   const methodBody = element.innerHTML.trim()
+//   const letCallback = makeFuncFromString<any>(methodBody);
+//   console.log({argument})
+//   const val = letCallback(globals)
+//   scope[argument] = val
+//   element.remove()
+//   console.log({scope})
+
+//   return scope
+// })
+
 init()
 // const counterScope = getScope("counter")
 // setInterval(() => counterScope!.count++, 100)

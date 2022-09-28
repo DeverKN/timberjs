@@ -46,19 +46,23 @@ const handleElement = (element: Element, scope: Scope) => {
     // if (isTextNode) 
     if (element.hasAttribute("x-ignore")) return
     for (const {name, value} of Array.from(element.attributes)) {
-        if (name.includes("-") || name.includes("@") || name.includes(":") || name.includes(":")) {
+        if (name.includes("-") || name.includes("@") || name.includes(":") || name.includes("$")) {
             let directiveName, directive;
             let directiveBody = ""
             let directiveArgument = ""
             let directiveModifiers: string[] = []
-            console.log({name})
+            // console.log({name})
             if (name.startsWith(":")) {
                 directiveName = "x-bind";
                 [directiveArgument, ...directiveModifiers] = name.substring(1).split(".");
             } else if (name.startsWith("@")) {
-                console.log({event: name})
+                // console.log({event: name})
                 directiveName = "x-on";
                 [directiveArgument, ...directiveModifiers] = name.substring(1).split(".");
+            } else if (name.startsWith("$")) {
+                // console.log({name})
+                directiveName = "x-let";
+                [directiveArgument, ...directiveModifiers] = name.substring(1).split("."); 
             } else if (name.includes(":")) {
                 [directiveName, directiveBody] = name.split(":");
                 [directiveArgument, ...directiveModifiers] = directiveBody.split(".");
@@ -66,6 +70,7 @@ const handleElement = (element: Element, scope: Scope) => {
                 directiveName = name
             }
             directive = directives.get(directiveName)
+            console.log({name, directive})
             if (directive) {
                 scope = directive(element as HTMLElement, value, scope, directiveArgument, directiveModifiers)
                 element.removeAttribute(name)

@@ -22,6 +22,9 @@ export const makeScopeProxy = (baseData: object, parentScope: Scope = {}): Scope
             return (key in target || key in parentScope)
         },
         get: (target, prop, reciever) => {
+            if (prop === "$$add") return (newProp, newVal) => {
+                Reflect.set(target, newProp, newVal, reciever)
+            }
             if (prop in target) {
                 if (effectBeingBound) listeners.set(prop, [...(listeners.get(prop) ?? []), effectBeingBound])
                 return Reflect.get(target, prop, reciever)
@@ -34,8 +37,10 @@ export const makeScopeProxy = (baseData: object, parentScope: Scope = {}): Scope
                 // console.log({prop, value, exists: prop in target})
                 Reflect.set(target, prop, value, reciever)
                 callAll(listeners.get(prop) ?? [])
-            } else {
+            } else if (prop in parentScope) {
                 parentScope[prop] = value
+            } else {
+                Reflect.set(target, prop, value, reciever)
             }
             return true
         }

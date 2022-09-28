@@ -1,0 +1,17 @@
+<template initial-count>
+
+    <span #count="initialCount"></span>
+
+    <template>
+        <button @click="count--">-</button>
+        {{ count }}
+        <button @click="count++">+</button>
+    </template>
+
+    <style x-scoped>
+        button {
+            background-color: lightblue;
+        }
+    </style>
+
+</template>

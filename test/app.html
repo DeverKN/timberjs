@@ -1,0 +1,22 @@
+<div>
+    <script x-scoped>
+        import timberCounter from "./timber-counter.html"
+        name = "Dever"
+    </script>
+
+    <timber-router>
+
+        <span x-slot="/index">
+            Hello {{ name }}!
+            <timber-counter initial-count="0"/>
+            <timber-counter initial-count="5"/>
+        </span>
+
+        <span x-slot="/counter/[count]">
+            <timber-counter [initial-count]="count"/>
+        </span>
+
+        <span x-slot="/[msg]">{{ msg }}</span>
+        
+    </timber-router>
+</div>

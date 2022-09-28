@@ -52,7 +52,7 @@ export const makeBaseGlobals = (element: HTMLElement) => {
 export const makeGlobalsProxy = (scope: Scope, otherGlobals: GlobalsObj): GlobalsObj => {
     return new Proxy({}, {
         has: (_target, key) => {
-            return (key in scope || key in otherGlobals)
+            return (key in scope || key in otherGlobals || !(key in globalThis))
         },
         get: (_target, prop, _reciever) => {
             if (prop in scope) {
@@ -62,10 +62,17 @@ export const makeGlobalsProxy = (scope: Scope, otherGlobals: GlobalsObj): Global
             }
         },
         set: (_target, prop, value, _reciever) => {
-            if (prop in scope) {
+            const local = prop in scope
+            const global = prop in otherGlobals
+            console.log({prop, local, global})
+            if (local) {
                 scope[prop] = value
-            } else {
+            } else if (global) {
                 otherGlobals[prop] = value
+            } else if (prop in globalThis) {
+                globalThis[prop] = value
+            } else {
+                scope[prop] = value
             }
             return true
         }
@@ -371,6 +378,22 @@ const xFor: Directive = (element, value, scope, _directiveArgument, _directiveMo
     return scope
 }
 
+const xLet = (element, value, scope, argument, modifiers) => {
+    console.log("let")
+    const globals = makeGlobalsProxy(scope, {$el: element})
+    const methodBody = value !== "" ? value : element.innerHTML.trim()
+    console.log({methodBody})
+    const letCallback = makeFuncFromString<any>(methodBody);
+    console.log({argument})
+    const val = letCallback(globals)
+    scope.$$add(argument, val)
+    element.remove()
+    console.log({scope})
+  
+    return scope
+}
+
+directives.set("x-let", xLet)
 directives.set("x-on", xOn)
 directives.set("x-scope", xScope)
 directives.set("x-text", xText)
