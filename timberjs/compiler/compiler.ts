@@ -2,12 +2,16 @@
 import { CompilableDirective, compilerDirectives } from '../directives/compilerDirectives';
 import { serialize } from './serialize';
 import { writeFileSync, readFileSync } from 'fs'
+import { readFile } from 'fs/promises'
 import { xText } from '../directives/compilable/xText';
 import { xHTML } from '../directives/compilable/xHTML';
 import { Node, NodeTag, parser } from 'posthtml-parser'
 import { compileToTimberComponent, ComponentCompiler } from './components/compileToTimberComponent';
 import { folderComponentResolver } from '../../woodsman/resolver';
 import { escapeComponentName } from './components/parseComponent';
+import { transpileSetupScript } from './transpiler/SetupScript';
+import { scopeStyles } from './transpiler/ScopedStyles';
+import { resolve } from 'path'
 
 const voidElements = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 
@@ -68,14 +72,17 @@ export type CompilerOptions = {
     componentResolver: ComponentResolver,
     definedWebComponents: Set<string>,
     loadedComponents: Set<string>,
-    componentType: 'WebComponent' | 'Timber' 
+    componentType: 'WebComponent' | 'Timber' ,
+    initialHydrationId?: number,
+    path?: string
 }
 
 export type AdditionalCompileOptions = {
     shouldIgnore?: boolean, 
     scopeId?: any, 
     staticScope?: string,
-    additionalAttrs?: string[]
+    additionalAttrs?: string[],
+    styleScope?: string,
 }
 
 type SlotObj = {
@@ -89,12 +96,14 @@ type SlotDetails = {
 
 const makeCloneFunc = async (el: Node, compilerOptions: CompilerOptions, nextHydrationId: number, additionalOptions: AdditionalCompileOptions): Promise<[string, number]> => {
     const { shouldIgnore, scopeId } = additionalOptions
+    console.log({cloneNext: nextHydrationId})
     const [childHTML, childHydration, newNextHydrationId] = await compile(el, compilerOptions, nextHydrationId, {
         shouldIgnore, 
         scopeId, 
         staticScope: '$scope'
     })
     nextHydrationId = newNextHydrationId
+    console.log({clone: nextHydrationId})
     const cloneFirstChild = `($scope) => {
         const template = document.createElement('template');
         template.innerHTML = \`${childHTML}\`;
@@ -115,7 +124,8 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         shouldIgnore = false, 
         scopeId = null, 
         staticScope = null, 
-        additionalAttrs = []
+        styleScope = "global",
+        additionalAttrs = [],
     } = additionalOptions
     if (typeof element === "string" || typeof element === "number") {
         // console.log({scopeId, staticScope})
@@ -129,7 +139,73 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
     const tagName = element.tag as string
     const {definedWebComponents, loadedComponents, componentType, componentCompiler} = compilerOptions
     const hydrationId = ++nextHydrationId
-    console.log({hydrationId})
+    console.log({hydrationId, nextHydrationId})
+
+    if (tagName === "script") {
+        //Handle Script tag
+        // const scriptType =  ?? 'inline'
+        const scriptContent = element.content.toString()
+        const lang = element.attrs?.lang?.toString() ?? 'js'
+        switch (element.attrs.context) {
+            case ('scoped'):
+                `scopedScript(($scoped, $declare) => {
+                    ${scriptContent}
+                }, ${staticScope ? staticScope : `'${scopeId}'`}, 'scoped')`
+                break;
+            case ('setup'):
+                hydrationString += `scopedScript(($$scoped, $$declare) => {
+                    const $$empty = null
+                    ${transpileSetupScript(scriptContent, lang)}
+                }, ${staticScope ? staticScope : `'${scopeId}'`}, 'setup')`
+                break;
+            default:
+                htmlString += `<script ${Object.entries(element.attrs).map(([attr, val]) => `${attr}='${val}'`).join(' ')}>
+                ${scriptContent}
+                </script>`
+                break;
+        }
+
+        return [htmlString, hydrationString, nextHydrationId]
+    }
+
+    if (tagName === "style" && element.attrs.hasOwnProperty('scoped')) {
+        const scopedStyles = await scopeStyles(element.content.toString(), `[data-x-style-scope='${styleScope}']`)
+        htmlString += `<style ${Object.entries(element.attrs).map(([attr, val]) => {
+            console.log({attr})
+            return `${attr}='${val}'`
+        }).join(' ')}>
+            ${scopedStyles}
+        </style>`
+        return [htmlString, hydrationString, nextHydrationId]
+    }
+
+    if (tagName === "include-html") {
+        if (!compilerOptions.path) {
+            console.error(`Must specify a base path when using <include-html>`)
+        }
+        const type = element.attrs.type ?? "timber"
+        const isRaw = (type === "raw")
+        const path = element.attrs.src.toString()
+        const resolvedPath = resolve(compilerOptions.path, "..", path)
+        // console.log({resolvedPath})
+        const rawHtmlString = (await readFile(resolvedPath)).toString()
+        if (isRaw) {
+            htmlString += rawHtmlString
+        } else {
+            const [includedHTML, includedScript] = await parseTimberBase(rawHtmlString, {
+                ...compilerOptions,
+                initialHydrationId: nextHydrationId,
+                path: resolvedPath
+            })
+            htmlString += includedHTML
+            hydrationString += includedScript
+        }
+        // const parsedHtmlString = isRaw ? rawHtmlString : 
+        // console.log({parsedHtmlString})
+        
+        return [htmlString, hydrationString, nextHydrationId]
+    }
+
     if (tagName.includes("-")) {
         //Load custom component
         // if (compilerOptions.)
@@ -154,6 +230,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                     })
                     const [_, slotName] = slotDirectiveName.split(slotDirectiveName.startsWith("#") ? "#" : ":")
                     console.log({slotDirectiveName, slotName, slotBinding})
+                    console.log({pre: nextHydrationId})
                     const [cloneBody, newNextHydrationId] = await makeCloneFunc(child, compilerOptions, nextHydrationId, additionalOptions)
                     nextHydrationId = newNextHydrationId
                     slotItems[slotName] = {
@@ -200,7 +277,9 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
     const firstChild = element.content?.[0]
     // console.log({firstChild})
     if (firstChild && firstChild.nodeType !== TEXT_NODE) {        
+        console.log({pre: nextHydrationId})
         const [clone, newNextHydrationId] = await makeCloneFunc(firstChild, compilerOptions, nextHydrationId, additionalOptions)
+        console.log({post: newNextHydrationId})
         nextHydrationId = newNextHydrationId
         cloneFirstChild = clone
     }
@@ -260,6 +339,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                         if (directiveName === "x-scope") {
                             scopeId = directiveData.scopeId
                             // console.log({scopeId, staticScope})
+                            styleScope = `${scopeId}`
                             staticScope = undefined
                             // console.log({scopeId})
                         }
@@ -278,7 +358,8 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         }
     }
 
-    additionalAttrs.forEach(attr => htmlString += ` ${attr}`)
+    // additionalAttrs.forEach(attr => htmlString += ` ${attr}`)
+    htmlString += ` data-x-style-scope='${styleScope}'`
     htmlString += `>`
 
     // console.log({tagName, attrs: Object.entries(element.attributes), htmlString})
@@ -294,7 +375,8 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                     shouldIgnore,
                     scopeId, 
                     staticScope,
-                    additionalAttrs
+                    additionalAttrs,
+                    styleScope
                 })
                 nextHydrationId = newNextHydrationId
                 htmlString += childHTML
@@ -305,6 +387,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         htmlString += `</${tagName}>`
     }
 
+    console.log({nextHydrationId})
     return [htmlString, hydrationString, nextHydrationId]
 }
 
@@ -314,7 +397,7 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
     // console.log(root["structure"])
     // console.log({root})
     // if (Array.isArray(root)) throw Error()
-    const [html, hydration] = await compile(root, compilerOptions, 0, {
+    const [html, hydration] = await compile(root, compilerOptions, compilerOptions.initialHydrationId ?? 0, {
         staticScope: "__defaultScope__"
     })
     // console.log(`
@@ -349,6 +432,31 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
     </script>`
 }
 
+export const parseTimberBase = async (rawHtml: string, compilerOptions: CompilerOptions, defaultState = {}) => {
+    const root = parse(rawHtml.trim())[0];
+    // console.log(root.nodeType);
+    // console.log(root["structure"])
+    // console.log({root})
+    // if (Array.isArray(root)) throw Error()
+    const [html, hydration] = await compile(root, compilerOptions, compilerOptions.initialHydrationId ?? 0, {
+        staticScope: "__defaultScope__"
+    })
+    // console.log(`
+    // <body>
+    // ${html}
+    // </body>
+    // <script src="/timberjs/runtime/module.ts" type="module"></script>
+    // <script>
+    // window.addEventListener('timber-init', () => {
+    //     const {handleDirective} = Timber
+    //     ${hydration}
+    // })
+    // </script>
+    // `)
+    // console.log(html)
+    return [html, hydration]
+}
+
 
 // parseTimber(`<div id="app"><div x-root x-scope=""><template x-template="timer"><div x-scope="{ time: initialTime }" x-interval:1000="time++" x-on:click="time--">{{ time }} s</div></template><template x-template="counter"><div x-scope="{ count: initialCount }">Name = <span x-html="$slots[0]"></span><button @click="count--">-</button>Count is {{count}} 2x count is {{ count * 2 }}<button @click="count++">+</button><span x-effect="(() => {if (count > 20) {$emit('high'); console.log('high');}})()"></span></div></template><template x-template="router"><div x-scope="{ route: location.pathname.split('/')[1] }"><span><span @client-navigate.window="console.log('test')"></span><span @client-navigate.window="route = location.pathname.split('/')[1]"></span><span x-effect="console.log({route})"></span><span x-for="namedSlot in $namedSlots"><span><!-- Route:{{route}} slotRoute:{{namedSlot[0]}} --><span x-if="route === namedSlot[0]" x-effect="console.log({route, slotRoute: namedSlot[0]})"><span x-html="namedSlot[1]"></span></span></span></span></span></div></template><template x-template="link"><div><span @click="(history.pushState({}, '', to), window.dispatchEvent(new Event('client-navigate', {bubbles: true})))" x-html="$slots[0]" x-bind:href="to"></span><span x-effect="console.log({to})">To = {{ to }}</span></div></template><div x-scope="{ count: 0, countRef: null, name: 'Dever' }"><span id="top"></span><span x-teleport="body">From the bottom ...</span><input x-model="name"><button @click="count--">-</button>{{ count }}<button @click="count++">+</button><!-- <template x-effect="console.log({count})"></template> --><div x-if="!(count < 5)" x-scope="{ count: 5 }"><div><button @click="count--">-</button>{{ count }}<button @click="count++">+</button><ul x-for="(item, i) in count"><li>Num: {{ item + 1 }} Index: {{ i / 2 }}</li></ul></div></div>Hello {{name}}<!-- <div x-component:timer="{ initialTime: 2 }"></div><div x-component:timer="{ initialTime: 5 }"></div> --><div x-component:counter="{ initialCount: 5 }"><slot><span>Btn 1</span></slot></div><div x-component:counter="{ initialCount: 10 }" @high.once="alert('Count is dangerously high!')"><slot><span>Btn 2</span></slot></div><span x-teleport="#top">to the top</span><div x-scope="{ href: '/index' }">Go to <input x-model="href"><span x-component:link="{ to: href }"><slot><span>Go to {{ href }}</span></slot></span></div><div x-component:router><slot name="hello"><span>Hellow</span></slot><slot name="index"><span>index</span></slot></div></div></div></div><script>const testAlert = () => alert("test!")</script><script type="module" src="/src/main.ts"></script>`)
 // parseTimber(`<ul x-on:click="alert('1')" id="list"><li>Hello World</li></ul>`)
@@ -371,22 +479,23 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
 // }))
 
 // console.log("test")
-// try {
-//     (async () => {
-//         console.log("compile")
-//         const compiled = await parseTimber(readFileSync("./pages/_index/page.html").toString().trim(), {
-//             componentCompiler: compileToTimberComponent,
-//             componentResolver: folderComponentResolver,
-//             definedWebComponents: new Set(),
-//             loadedComponents: new Set(),
-//             componentType: 'Timber'
-//         })
-//         writeFileSync("counter.compiled.html", compiled)
-//         // console.log({compiled})
-//         console.log("compiled")
-//     })()
-// } catch (e) {
-//     console.log(e)
-// }
+try {
+    (async () => {
+        console.log("compile")
+        const compiled = await parseTimber(readFileSync("./components/todo-list.html").toString().trim(), {
+            componentCompiler: compileToTimberComponent,
+            componentResolver: folderComponentResolver,
+            definedWebComponents: new Set(),
+            loadedComponents: new Set(),
+            componentType: 'Timber',
+            path: resolve("./components/todo-list.html")
+        })
+        writeFileSync("todo-list.compiled.html", compiled)
+        // console.log({compiled})
+        // console.log("compiled")
+    })()
+} catch (e) {
+    console.log(e)
+}
 
 // console.log(body)

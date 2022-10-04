@@ -1,20 +1,36 @@
-<template>
-    <div x-scope="{todos: [{text: 'win case comp', complete: false}, {text: 'make cool slides', complete: false}], newTodo: ''}">
+<div x-scope="">
+    <script lang="ts" context="setup">
+        export let todos;
+        todos = [{text: 'win case comp', complete: false}, {text: 'make cool slides', complete: false}]
+        export let newTodo = ''
+        t.export = addToDo
+        export const removeToDo = (index) => {
+            todos = todos.filter((_, i) => i !== index)
+        }
+        export const addToDo = () => {
+            todos = [...todos, {text: newTodo, complete: false}]
+            newTodo = ''
+        }
+    </script>
+
+    <div>
+        <!-- <include-html src="./logo.html" type="timber"></include-html> -->
         <div>
             <input x-model="newTodo">
         </div>
-        <button @click="(todos = [...todos, {text: newTodo, complete: false}], newTodo = '')">Add todo</button>
+        <button @click="">Add todo</button>
         <!-- <button @click="" x-effect="console.log({newTodo})">Clear</button> -->
         <ul>
             <span x-for="(todo, index) in todos">
                 <li [class]="todo.complete ? 'todo-complete' : 'todo'" 
-                    @click="todos = todos.filter((_, i) => i !== index)">
+                    @click="removeToDo(index)">
                     #{{ index + 1 }} {{todo.text}}
                 </li>
             </span>
         </ul>
     </div>
-    <style>
+
+    <style scoped>
         .label {
             background-color: red;
         }
@@ -28,4 +44,4 @@
             opacity: .5;
         }
     </style>
-</template>
+</div>

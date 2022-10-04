@@ -1,13 +1,7 @@
 
 import { compile, CompilerOptions } from "../compiler";
+import { scopeStyles } from "../transpiler/ScopedStyles";
 import { parseComponent } from "./parseComponent";
-import postcss from "postcss";
-import namespace from "postcss-plugin-namespace"
-
-const scopeStyles = async (unscopedStyles: string, scopeSelector: string): Promise<string> => {
-    const scopedStyles = (await postcss(namespace(scopeSelector)).process(unscopedStyles, { from: 'src/app.css', to: 'dest/app.css' })).css
-    return scopedStyles
-}
 
 export type ComponentCompiler = (rawHtml: string, compilerOptions: CompilerOptions, nextHydrationId: number, componentName?: string) => Promise<string>
 
@@ -27,7 +21,7 @@ export const compileToTimberComponent: ComponentCompiler = async (rawHtml: strin
         scopeStyles(styles, `[${styleScope}]`),
         compile(template, compilerOptions, nextHydrationId, {
             staticScope: '$$scope',
-            additionalAttrs: [styleScope]
+            styleScope: componentName
         })
     ])
     nextHydrationId = newNextHydrationId

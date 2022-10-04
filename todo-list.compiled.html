@@ -3,34 +3,37 @@
         <link rel="icon" href="data:,">
     </head>
     <body>
-    <template data-hydration-id="1">
+    <div data-hydration-id="1" data-x-style-scope='__scope_0'>
     
 
-    <div data-hydration-id="1">
-        <div data-hydration-id="NaN">
-            <input data-hydration-id="NaN"></div>
-        <button data-hydration-id="NaN">Add todo</button>
+    <div data-hydration-id="NaN" data-x-style-scope='__scope_0'>
+        <!-- <include-html src="./logo.html" type="timber"></include-html> -->
+        <div data-hydration-id="NaN" data-x-style-scope='__scope_0'>
+            <input data-hydration-id="NaN" data-x-style-scope='__scope_0'></div>
+        <button data-hydration-id="NaN" data-x-style-scope='__scope_0'>Add todo</button>
         <!-- <button @click="" x-effect="console.log({newTodo})">Clear</button> -->
-        <ul data-hydration-id="NaN">
-            <span data-hydration-id="NaN"></span>
+        <ul data-hydration-id="NaN" data-x-style-scope='__scope_0'>
+            <span data-hydration-id="NaN" data-x-style-scope='__scope_0'></span>
         </ul>
     </div>
 
-    <style data-hydration-id="1">
-        .label {
+    <style scoped=''>
+            
+        [data-x-style-scope='__scope_0'] .label {
             background-color: red;
         }
-        .todo:hover {
+        [data-x-style-scope='__scope_0'] .todo:hover {
             text-decoration: line-through;
         }
-        .todo-complete {
+        [data-x-style-scope='__scope_0'] .todo-complete {
             text-decoration: line-through;
         }
-        .todo-complete:hover {
+        [data-x-style-scope='__scope_0'] .todo-complete:hover {
             opacity: .5;
         }
-    </style>
-</template>
+    
+        </style>
+</div>
     </body>
     <script src="../timberjs/runtime/module.ts" type="module"></script>
     <script>
@@ -39,7 +42,19 @@
         let selectorTarget = document;
         const { makeScopeProxy } = Timber
         const __defaultScope__ = makeScopeProxy({});
-        scopedScript(($$scoped, $$declare) => {
+        
+                        handleDirective("x-scope",
+                        selectorTarget.querySelector("[data-hydration-id='1']"),
+                        {dataGetter:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return 
+                            }
+},
+scopeId:`__scope_0`},
+                        __defaultScope__
+                        );
+                        scopedScript(($$scoped, $$declare) => {
                     const $$empty = null
                     $$declare("let", "todos", $$empty)
 $$scoped.todos = [{
@@ -61,19 +76,7 @@ $$declare("const", "addToDo", () => {
   }];
   $$scoped.newTodo = '';
 })
-                }, __defaultScope__)
-                        handleDirective("x-scope",
-                        selectorTarget.querySelector("[data-hydration-id='1']"),
-                        {dataGetter:function anonymous(additionalGlobals = {}
-) {
-with (additionalGlobals) {
-                                return 
-                            }
-},
-scopeId:`__scope_0`},
-                        __defaultScope__
-                        );
-                        
+                }, '__scope_0', 'setup')
                         handleDirective("x-model",
                         selectorTarget.querySelector("[data-hydration-id='NaN']"),
                         {boundVal:`newTodo`,

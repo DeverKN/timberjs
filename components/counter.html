@@ -1,0 +1,11 @@
+<div x-scope>
+    <script context="setup" lang="ts">
+        export let count = 10;
+        export const decrement = () => count--
+        export const increment = () => count++
+    </script>
+
+    <button @click="decrement()">-</button>
+    {{ count }}
+    <button @click="increment()">+</button>
+</div>
