@@ -1,0 +1,17 @@
+<div x-scope="">
+    <script lang="ts" context="setup" src="./todo-list.ts"></script>
+
+    <div>
+        <div>
+            <label>New Todo: </label><input x-model="newTodo"/>
+            <button @click="addToDo()">Add todo</button>
+        </div>
+        <ul x-for="(todo, index) in todos">
+            <li [class]="todo.complete ? 'todo-complete' : 'todo'" @click="removeToDo(index)">
+            #{{ index + 1 }} {{todo.text}}
+            </li>
+        </ul>
+    </div>
+
+    <style scoped src="./todo-list.css"></style>
+</div>

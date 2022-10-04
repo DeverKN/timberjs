@@ -26,6 +26,7 @@ export const parse = (htmlString: string) => {
 type CompilerReturn = [string, string, number]
 
 const handleTextNode = (text: string, nextHydrationId: number, scopeId: string, staticScope?: string): CompilerReturn => {
+    // console.log({nextHydrationId})
     const mustacheRegex = /{{([^}]*)}}/g
     const textTemplate = text
     // console.log({textTemplate, staticScope})
@@ -62,6 +63,7 @@ const handleTextNode = (text: string, nextHydrationId: number, scopeId: string, 
         // console.log(replacements)
         // textNode.replaceWith(...replacements)
     }
+    // console.log({text: nextHydrationId})
     return [htmlString, hydrationString, nextHydrationId]
 }
 
@@ -96,14 +98,16 @@ type SlotDetails = {
 
 const makeCloneFunc = async (el: Node, compilerOptions: CompilerOptions, nextHydrationId: number, additionalOptions: AdditionalCompileOptions): Promise<[string, number]> => {
     const { shouldIgnore, scopeId } = additionalOptions
-    console.log({cloneNext: nextHydrationId})
+    // console.log("make clone")
+
     const [childHTML, childHydration, newNextHydrationId] = await compile(el, compilerOptions, nextHydrationId, {
         shouldIgnore, 
         scopeId, 
         staticScope: '$scope'
     })
+    // console.log("made")
     nextHydrationId = newNextHydrationId
-    console.log({clone: nextHydrationId})
+    // console.log({clone: el, childHTML})
     const cloneFirstChild = `($scope) => {
         const template = document.createElement('template');
         template.innerHTML = \`${childHTML}\`;
@@ -120,6 +124,7 @@ const makeCloneFunc = async (el: Node, compilerOptions: CompilerOptions, nextHyd
 export const compile = async (element: Node, compilerOptions: CompilerOptions, nextHydrationId: number, additionalOptions: AdditionalCompileOptions): Promise<CompilerReturn> => {
     // console.log({scopeId, staticScope})
     // if (typeof element === "number") throw Error("Numbers are not allowed")
+    // console.log({compile: nextHydrationId})
     let {
         shouldIgnore = false, 
         scopeId = null, 
@@ -129,7 +134,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
     } = additionalOptions
     if (typeof element === "string" || typeof element === "number") {
         // console.log({scopeId, staticScope})
-        return handleTextNode(element.toString(), scopeId!, staticScope)
+        return handleTextNode(element.toString(), nextHydrationId, scopeId, staticScope)
     }
     if (typeof element !== "object") throw Error("e")
     // console.log(element["structure"])
@@ -138,13 +143,20 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
     // console.log({tag: element.tagName})
     const tagName = element.tag as string
     const {definedWebComponents, loadedComponents, componentType, componentCompiler} = compilerOptions
+    // console.log({preInc: nextHydrationId})
     const hydrationId = ++nextHydrationId
-    console.log({hydrationId, nextHydrationId})
+    // console.log({hydrationId, nextHydrationId})
 
     if (tagName === "script") {
         //Handle Script tag
         // const scriptType =  ?? 'inline'
-        const scriptContent = element.content.toString()
+        let scriptContent;
+        const source = element.attrs.src?.toString()
+        if (source) {
+            scriptContent = await readFile(resolve(compilerOptions.path, "..", source))
+        } else {
+            scriptContent = element.content.toString()
+        }
         const lang = element.attrs?.lang?.toString() ?? 'js'
         switch (element.attrs.context) {
             case ('scoped'):
@@ -168,12 +180,22 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         return [htmlString, hydrationString, nextHydrationId]
     }
 
-    if (tagName === "style" && element.attrs.hasOwnProperty('scoped')) {
-        const scopedStyles = await scopeStyles(element.content.toString(), `[data-x-style-scope='${styleScope}']`)
-        htmlString += `<style ${Object.entries(element.attrs).map(([attr, val]) => {
-            console.log({attr})
+    if (tagName === "style" && element?.attrs?.hasOwnProperty('scoped')) {
+        const source = element.attrs.src?.toString()
+        let styles;
+        if (source) {
+            styles = await readFile(resolve(compilerOptions.path, "..", source))
+        } else {
+            styles = element.content.toString()
+        }
+
+        const excludedAttrs = ["src", "scoped"]
+        const attrsString = Object.entries(element.attrs).filter((([attr]) => !excludedAttrs.includes(attr))).map(([attr, val]) => {
+            // console.log({attr})
             return `${attr}='${val}'`
-        }).join(' ')}>
+        }).join(' ')
+        const scopedStyles = await scopeStyles(styles, `[data-x-style-scope='${styleScope}']`)
+        htmlString += `<style ${attrsString}>
             ${scopedStyles}
         </style>`
         return [htmlString, hydrationString, nextHydrationId]
@@ -192,11 +214,12 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         if (isRaw) {
             htmlString += rawHtmlString
         } else {
-            const [includedHTML, includedScript] = await parseTimberBase(rawHtmlString, {
+            const [includedHTML, includedScript, newNextHydrationId] = await parseTimberBase(rawHtmlString, {
                 ...compilerOptions,
                 initialHydrationId: nextHydrationId,
                 path: resolvedPath
             })
+            nextHydrationId = newNextHydrationId
             htmlString += includedHTML
             hydrationString += includedScript
         }
@@ -229,7 +252,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                         return name.startsWith("#") || name.startsWith("x-slot")
                     })
                     const [_, slotName] = slotDirectiveName.split(slotDirectiveName.startsWith("#") ? "#" : ":")
-                    console.log({slotDirectiveName, slotName, slotBinding})
+                    // console.log({slotDirectiveName, slotName, slotBinding})
                     console.log({pre: nextHydrationId})
                     const [cloneBody, newNextHydrationId] = await makeCloneFunc(child, compilerOptions, nextHydrationId, additionalOptions)
                     nextHydrationId = newNextHydrationId
@@ -274,18 +297,24 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
 
     // const children = element.childNodes as unknown as HTMLElement[]
     let cloneFirstChild = "() => {}"
-    const firstChild = element.content?.[0]
+    let firstChildIndex = 0
+    let firstChild;
+    do {
+        firstChild = element.content?.[firstChildIndex++]
+    } while (firstChild && typeof firstChild === 'string' && firstChild.trim().length === 0)
     // console.log({firstChild})
-    if (firstChild && firstChild.nodeType !== TEXT_NODE) {        
-        console.log({pre: nextHydrationId})
+    if (firstChild) {        
+        // console.log({pre: nextHydrationId})
         const [clone, newNextHydrationId] = await makeCloneFunc(firstChild, compilerOptions, nextHydrationId, additionalOptions)
-        console.log({post: newNextHydrationId})
+        console.log({element, firstChild, clone})
+        // console.log({post: newNextHydrationId})
         nextHydrationId = newNextHydrationId
         cloneFirstChild = clone
     }
 
     let shouldParseChildren = true;
 
+    // console.log({attrs: nextHydrationId})
     if (element.attrs) {
         
         for (const [name, value] of Object.entries(element.attrs)) {
@@ -294,7 +323,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                 const xBindShorthandRegex = /\[([^.]+)\](?:\.([^.]+))*/
                 const bindMatch = name.match(xBindShorthandRegex)
                 const isOn = name.startsWith("@")
-                console.log({name})
+                // console.log({name})
                 if ((name.includes("-") && !name.startsWith("data")) || isOn || bindMatch) {
                     let directiveName: string;
                     let directive: CompilableDirective<any> | undefined;
@@ -307,7 +336,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
                         // const directiveString = name.slice(1, -1);
                         // console.log({directiveString});
                         [directiveArgument, ...directiveModifiers] = bindMatch.slice(1);
-                        console.log({directiveArgument, directiveModifiers})
+                        // console.log({directiveArgument, directiveModifiers})
                     } else if (isOn) {
                         directiveName = "x-on";
                         const directiveString = name.substring(1);
@@ -364,13 +393,16 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
 
     // console.log({tagName, attrs: Object.entries(element.attributes), htmlString})
 
+    // console.log({children: nextHydrationId})
     if (!isVoid) {
         if (shouldParseChildren) {
             const content = element.content ?? []
             const children = Array.isArray(content) ? content : [content]
+            // console.log({content, children})
             // if (!Array.isArray(children)) throw Error("content must be an array")
             for (const child of children) {
                 if (Array.isArray(child)) throw Error("content must be an array")
+                // console.log({child: nextHydrationId})
                 const [childHTML, childHydration, newNextHydrationId] = await compile(child, compilerOptions, nextHydrationId, {
                     shouldIgnore,
                     scopeId, 
@@ -387,7 +419,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         htmlString += `</${tagName}>`
     }
 
-    console.log({nextHydrationId})
+    // console.log({nextHydrationId})
     return [htmlString, hydrationString, nextHydrationId]
 }
 
@@ -397,9 +429,7 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
     // console.log(root["structure"])
     // console.log({root})
     // if (Array.isArray(root)) throw Error()
-    const [html, hydration] = await compile(root, compilerOptions, compilerOptions.initialHydrationId ?? 0, {
-        staticScope: "__defaultScope__"
-    })
+    const [html, hydration] = await parseTimberBase(rawHtml, compilerOptions)
     // console.log(`
     // <body>
     // ${html}
@@ -423,22 +453,23 @@ export const parseTimber = async (rawHtml: string, compilerOptions: CompilerOpti
     <script src="../timberjs/runtime/module.ts" type="module"></script>
     <script>
     window.addEventListener('timber-init', () => {
-        const {handleDirective} = Timber
+        const { handleDirective, makeScopeProxy, scopedScript } = Timber
         let selectorTarget = document;
-        const { makeScopeProxy } = Timber
         const __defaultScope__ = makeScopeProxy(${serialize(defaultState)});
         ${hydration}
     })
     </script>`
 }
 
-export const parseTimberBase = async (rawHtml: string, compilerOptions: CompilerOptions, defaultState = {}) => {
-    const root = parse(rawHtml.trim())[0];
+export const parseTimberBase = async (rawHtml: string, compilerOptions: CompilerOptions, defaultState = {}): Promise<[string, string, number]> => {
+    const trimmedHTML = rawHtml.trim()
+    // console.log({ trimmedHTML, rawHtml })
+    const root = parse(trimmedHTML)[0];
     // console.log(root.nodeType);
     // console.log(root["structure"])
     // console.log({root})
     // if (Array.isArray(root)) throw Error()
-    const [html, hydration] = await compile(root, compilerOptions, compilerOptions.initialHydrationId ?? 0, {
+    const [html, hydration, nextHydrationId] = await compile(root, compilerOptions, compilerOptions.initialHydrationId ?? 0, {
         staticScope: "__defaultScope__"
     })
     // console.log(`
@@ -454,7 +485,7 @@ export const parseTimberBase = async (rawHtml: string, compilerOptions: Compiler
     // </script>
     // `)
     // console.log(html)
-    return [html, hydration]
+    return [html, hydration, nextHydrationId]
 }
 
 
@@ -482,13 +513,13 @@ export const parseTimberBase = async (rawHtml: string, compilerOptions: Compiler
 try {
     (async () => {
         console.log("compile")
-        const compiled = await parseTimber(readFileSync("./components/todo-list.html").toString().trim(), {
+        const compiled = await parseTimber(readFileSync("./components/todo-list/todo-list.html").toString().trim(), {
             componentCompiler: compileToTimberComponent,
             componentResolver: folderComponentResolver,
             definedWebComponents: new Set(),
             loadedComponents: new Set(),
             componentType: 'Timber',
-            path: resolve("./components/todo-list.html")
+            path: resolve("./components/todo-list/todo-list.html")
         })
         writeFileSync("todo-list.compiled.html", compiled)
         // console.log({compiled})

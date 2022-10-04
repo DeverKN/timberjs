@@ -6,41 +6,35 @@
     <div data-hydration-id="1" data-x-style-scope='__scope_0'>
     
 
-    <div data-hydration-id="NaN" data-x-style-scope='__scope_0'>
-        <!-- <include-html src="./logo.html" type="timber"></include-html> -->
-        <div data-hydration-id="NaN" data-x-style-scope='__scope_0'>
-            <input data-hydration-id="NaN" data-x-style-scope='__scope_0'></div>
-        <button data-hydration-id="NaN" data-x-style-scope='__scope_0'>Add todo</button>
-        <!-- <button @click="" x-effect="console.log({newTodo})">Clear</button> -->
-        <ul data-hydration-id="NaN" data-x-style-scope='__scope_0'>
-            <span data-hydration-id="NaN" data-x-style-scope='__scope_0'></span>
-        </ul>
+    <div data-hydration-id="4" data-x-style-scope='__scope_0'>
+        <div data-hydration-id="10" data-x-style-scope='__scope_0'>
+            <label data-hydration-id="12" data-x-style-scope='__scope_0'>New Todo: </label><input data-hydration-id="13" data-x-style-scope='__scope_0'>
+            <button data-hydration-id="14" data-x-style-scope='__scope_0'>Add todo</button>
+        </div>
+        <ul data-hydration-id="15" data-x-style-scope='__scope_0'></ul>
     </div>
 
-    <style scoped=''>
-            
-        [data-x-style-scope='__scope_0'] .label {
-            background-color: red;
-        }
-        [data-x-style-scope='__scope_0'] .todo:hover {
-            text-decoration: line-through;
-        }
-        [data-x-style-scope='__scope_0'] .todo-complete {
-            text-decoration: line-through;
-        }
-        [data-x-style-scope='__scope_0'] .todo-complete:hover {
-            opacity: .5;
-        }
-    
+    <style >
+            [data-x-style-scope='__scope_0'] .label {
+    background-color: red;
+}
+[data-x-style-scope='__scope_0'] .todo:hover {
+    text-decoration: line-through;
+}
+[data-x-style-scope='__scope_0'] .todo-complete {
+    text-decoration: line-through;
+}
+[data-x-style-scope='__scope_0'] .todo-complete:hover {
+    opacity: .5;
+}
         </style>
 </div>
     </body>
     <script src="../timberjs/runtime/module.ts" type="module"></script>
     <script>
     window.addEventListener('timber-init', () => {
-        const {handleDirective} = Timber
+        const { handleDirective, makeScopeProxy, scopedScript } = Timber
         let selectorTarget = document;
-        const { makeScopeProxy } = Timber
         const __defaultScope__ = makeScopeProxy({});
         
                         handleDirective("x-scope",
@@ -56,16 +50,14 @@ scopeId:`__scope_0`},
                         );
                         scopedScript(($$scoped, $$declare) => {
                     const $$empty = null
-                    $$declare("let", "todos", $$empty)
-$$scoped.todos = [{
+                    $$declare("let", "todos", [{
   text: 'win case comp',
   complete: false
 }, {
   text: 'make cool slides',
   complete: false
-}];
+}])
 $$declare("let", "newTodo", '')
-t.export = addToDo;
 $$declare("const", "removeToDo", index => {
   $$scoped.todos = $$scoped.todos.filter((_, i) => i !== index);
 })
@@ -78,19 +70,19 @@ $$declare("const", "addToDo", () => {
 })
                 }, '__scope_0', 'setup')
                         handleDirective("x-model",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                        selectorTarget.querySelector("[data-hydration-id='13']"),
                         {boundVal:`newTodo`,
 customVal:undefined},
                         '__scope_0'
                         );
                         
                         handleDirective("x-on",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                        selectorTarget.querySelector("[data-hydration-id='14']"),
                         {event:`click`,
 handler:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
-                                return 
+                                return addToDo()
                             }
 },
 options:{},
@@ -99,7 +91,7 @@ target:`self`},
                         );
                         
                         handleDirective("x-for",
-                        selectorTarget.querySelector("[data-hydration-id='NaN']"),
+                        selectorTarget.querySelector("[data-hydration-id='15']"),
                         {getIterable:function anonymous(additionalGlobals = {}
 ) {
 with (additionalGlobals) {
@@ -115,11 +107,59 @@ keyBy:undefined},
                         '__scope_0'
                         , ($scope) => {
         const template = document.createElement('template');
-        template.innerHTML = `
-                `;
+        template.innerHTML = `<li data-hydration-id="16" data-x-style-scope='global'>
+            #<span data-hydration-id="19"></span> <span data-hydration-id="20"></span>
+            </li>`;
         const clone = template.content
         let selectorTarget = clone
         
+                        handleDirective("x-bind",
+                        selectorTarget.querySelector("[data-hydration-id='16']"),
+                        {attributeName:`class`,
+boundValueGetter:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return todo.complete ? 'todo-complete' : 'todo'
+                            }
+},
+once:false},
+                        $scope
+                        );
+                        
+                        handleDirective("x-on",
+                        selectorTarget.querySelector("[data-hydration-id='16']"),
+                        {event:`click`,
+handler:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return removeToDo(index)
+                            }
+},
+options:{},
+target:`self`},
+                        $scope
+                        );
+                        
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='19']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return  index + 1 
+                            }
+}}, 
+                $scope);
+                
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='20']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return todo.text
+                            }
+}}, 
+                $scope);
+                
         const el = clone.firstChild
         console.log({template, clone, el})
         return el

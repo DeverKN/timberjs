@@ -57,12 +57,13 @@ const scriptSetupPlugin = (babel) => {
   }
 
   export const transpileSetupScript = (source: string, lang: string) => {
+    // console.log({lang, source})
     const compiled = transform(source, 
       {
           plugins:[
                     scriptSetupPlugin,
-                  ], 
-          presets: (lang === 'ts' ? ["@babel/preset-typescript"] : []),
+                    "@babel/plugin-transform-typescript"
+                  ],
           filename: 'inline.js'
       }
     );

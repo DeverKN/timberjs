@@ -1,9 +1,7 @@
 <div x-scope="">
     <script lang="ts" context="setup">
-        export let todos;
-        todos = [{text: 'win case comp', complete: false}, {text: 'make cool slides', complete: false}]
+        export let todos = [{text: 'win case comp', complete: false}, {text: 'make cool slides', complete: false}]
         export let newTodo = ''
-        t.export = addToDo
         export const removeToDo = (index) => {
             todos = todos.filter((_, i) => i !== index)
         }
@@ -14,19 +12,14 @@
     </script>
 
     <div>
-        <!-- <include-html src="./logo.html" type="timber"></include-html> -->
         <div>
-            <input x-model="newTodo">
+            <label>New Todo: </label><input x-model="newTodo"/>
+            <button @click="addToDo()">Add todo</button>
         </div>
-        <button @click="">Add todo</button>
-        <!-- <button @click="" x-effect="console.log({newTodo})">Clear</button> -->
-        <ul>
-            <span x-for="(todo, index) in todos">
-                <li [class]="todo.complete ? 'todo-complete' : 'todo'" 
-                    @click="removeToDo(index)">
-                    #{{ index + 1 }} {{todo.text}}
-                </li>
-            </span>
+        <ul x-for="(todo, index) in todos">
+            <li [class]="todo.complete ? 'todo-complete' : 'todo'" @click="removeToDo(index)">
+                #{{ index + 1 }} {{todo.text}}
+            </li>
         </ul>
     </div>
 

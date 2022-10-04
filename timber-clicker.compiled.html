@@ -1,0 +1,75 @@
+
+    <head>
+        <link rel="icon" href="data:,">
+    </head>
+    <body>
+    <template data-hydration-id="1" str:label="Count is " num:count="0" data-x-style-scope='global'><div data-hydration-id="7" data-x-style-scope='global'>
+        <button data-hydration-id="8" data-x-style-scope='global'>-</button>
+        <span data-hydration-id="9"></span><span data-hydration-id="10"></span>
+        <button data-hydration-id="11" data-x-style-scope='global'>+</button>
+        <!-- <div x-effect="(count++, $emit('test'))">Click Me</div> -->
+    </div>
+    <style data-hydration-id="12" data-x-style-scope='global'>
+        button {
+            color: red;
+        }
+    </style>
+</template>
+    </body>
+    <script src="../timberjs/runtime/module.ts" type="module"></script>
+    <script>
+    window.addEventListener('timber-init', () => {
+        const { handleDirective, makeScopeProxy, scopedScript } = Timber
+        let selectorTarget = document;
+        const __defaultScope__ = makeScopeProxy({});
+        
+                        handleDirective("x-on",
+                        selectorTarget.querySelector("[data-hydration-id='8']"),
+                        {event:`click`,
+handler:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count--
+                            }
+},
+options:{},
+target:`self`},
+                        __defaultScope__
+                        );
+                        
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='9']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return  label 
+                            }
+}}, 
+                __defaultScope__);
+                
+                handleDirective("x-text",
+                selectorTarget.querySelector("[data-hydration-id='10']"),
+                {textCallback:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return  count 
+                            }
+}}, 
+                __defaultScope__);
+                
+                        handleDirective("x-on",
+                        selectorTarget.querySelector("[data-hydration-id='11']"),
+                        {event:`click`,
+handler:function anonymous(additionalGlobals = {}
+) {
+with (additionalGlobals) {
+                                return count++
+                            }
+},
+options:{},
+target:`self`},
+                        __defaultScope__
+                        );
+                        
+    })
+    </script>

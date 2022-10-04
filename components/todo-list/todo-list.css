@@ -1,0 +1,12 @@
+.label {
+    background-color: red;
+}
+.todo:hover {
+    text-decoration: line-through;
+}
+.todo-complete {
+    text-decoration: line-through;
+}
+.todo-complete:hover {
+    opacity: .5;
+}

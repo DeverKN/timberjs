@@ -125,6 +125,8 @@ export const xFor: CompilableDirective<xForData> = {
             const iterable = (typeof res === "number" ? 
                             [...Array(res ?? 0).keys()] : 
                             ((Symbol.iterator in Object(res)) ? res : Object.entries(res))) as any[]
+
+            console.log({iterable})
     
             if (keyBy) {
                 //keyed
