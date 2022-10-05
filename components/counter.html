@@ -1,11 +1,30 @@
-<div x-scope>
-    <script context="setup" lang="ts">
-        export let count = 10;
-        export const decrement = () => count--
-        export const increment = () => count++
+<template num:intial="0">
+    <script context="setup">
+        import { useTimer } from "./useTimer.ts"
+
+        let count = intial;
+        const decrement = () => count--
+        const increment = () => count++
+        let doubledCount = computed(() => count * 2)
+        let time = useTimer()
+
+        effect(() => {
+            console.log({count})
+
+        })
     </script>
 
-    <button @click="decrement()">-</button>
+    <button class="dec" @click="decrement()">-</button>
     {{ count }}
-    <button @click="increment()">+</button>
-</div>
+    <button class="inc" @click="increment()">+</button>
+
+    <style scoped>
+        .dec {
+            color:red
+        }
+
+        .inc {
+            color:green
+        }
+    </style>
+</template>

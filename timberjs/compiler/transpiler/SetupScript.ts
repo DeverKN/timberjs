@@ -1,15 +1,16 @@
 import { transform } from "@babel/core";
 
-const scriptSetupPlugin = (babel) => {
+const makeScriptSetupPlugin = (props: string[]) => {
+  return (babel) => {
     const { types: t } = babel;
     
-    const scoped = new Set()
+    const scoped = new Set(props)
     return {
       name: "ast-transform", // not required
       visitor: {
-        ExportNamedDeclaration(path) {
+        VariableDeclaration(path) {
           const { node } = path
-          const { kind, declarations } = node.declaration
+          const { kind, declarations } = node
           path.replaceWithMultiple(declarations.map((declarator) => {
             const { name } = declarator.id
             scoped.add(name)
@@ -22,9 +23,24 @@ const scriptSetupPlugin = (babel) => {
                     ]
              )
           }))
-          
-          //path.node.name = path.node.name.split('').reverse().join('');
         },
+        // ExportNamedDeclaration(path) {
+        //   const { node } = path
+        //   const { kind, declarations } = node.declaration
+        //   path.replaceWithMultiple(declarations.map((declarator) => {
+        //     const { name } = declarator.id
+        //     scoped.add(name)
+        //     return t.callExpression(
+        //             t.identifier("$$declare"),
+        //             [
+        //               t.stringLiteral(kind),
+        //               t.stringLiteral(name),
+        //               declarator.init || t.identifier("$$empty")
+        //             ]
+        //      )
+        //   }))
+          
+        // },
         Identifier(path) {
           const {node} = path
           const {name} = node
@@ -55,13 +71,13 @@ const scriptSetupPlugin = (babel) => {
       }
     };
   }
+}
 
-  export const transpileSetupScript = (source: string, lang: string) => {
-    // console.log({lang, source})
+  export const transpileSetupScript = (source: string, lang: string, props: string[] = []) => {
     const compiled = transform(source, 
       {
           plugins:[
-                    scriptSetupPlugin,
+                    makeScriptSetupPlugin(props),
                     "@babel/plugin-transform-typescript"
                   ],
           filename: 'inline.js'
