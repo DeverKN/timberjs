@@ -8,14 +8,14 @@ const makeScriptSetupPlugin = (props: string[]) => {
     return {
       name: "ast-transform", // not required
       visitor: {
-        VariableDeclaration(path) {
+        ExportNamedDeclaration(path) {
           const { node } = path
-          const { kind, declarations } = node
+          const { kind, declarations } = node.declaration
           path.replaceWithMultiple(declarations.map((declarator) => {
             const { name } = declarator.id
             scoped.add(name)
             return t.callExpression(
-                    t.identifier("$$declare"),
+                    t.identifier("$extend"),
                     [
                       t.stringLiteral(kind),
                       t.stringLiteral(name),
@@ -24,26 +24,25 @@ const makeScriptSetupPlugin = (props: string[]) => {
              )
           }))
         },
-        // ExportNamedDeclaration(path) {
-        //   const { node } = path
-        //   const { kind, declarations } = node.declaration
-        //   path.replaceWithMultiple(declarations.map((declarator) => {
-        //     const { name } = declarator.id
-        //     scoped.add(name)
-        //     return t.callExpression(
-        //             t.identifier("$$declare"),
-        //             [
-        //               t.stringLiteral(kind),
-        //               t.stringLiteral(name),
-        //               declarator.init || t.identifier("$$empty")
-        //             ]
-        //      )
-        //   }))
-          
-        // },
+        VariableDeclaration(path) {
+          const { node } = path
+          const { kind, declarations } = node
+          path.replaceWithMultiple(declarations.map((declarator) => {
+            const { name } = declarator.id
+            scoped.add(name)
+            return t.callExpression(
+                    t.identifier("$declare"),
+                    [
+                      t.stringLiteral(kind),
+                      t.stringLiteral(name),
+                      declarator.init || t.identifier("$$empty")
+                    ]
+             )
+          }))
+        },
         Identifier(path) {
           const {node} = path
-          const {name} = node
+        const {name} = node
           if (scoped.has(name)) {
             const parent = path.parentPath.node
             const isMemberExp = (parent.type === "MemberExpression" && parent.property === node)
@@ -55,18 +54,7 @@ const makeScriptSetupPlugin = (props: string[]) => {
               ))
               path.skip()
             }
-          }/* else {
-            const parent = path.parentPath.node
-            const isMemberExp = (parent.type === "MemberExpression" && parent.property === node)
-            const isObjectProp = (parent.type === "ObjectProperty" && parent.key === node) 
-            if (!(isObjectProp || isMemberExp)) {
-              path.replaceWith(t.memberExpression(
-                t.identifier("$$maybeScoped"),
-                node
-              ))
-            }
-            path.skip()
-          }*/
+          }
         }
       }
     };
