@@ -1,6 +1,5 @@
 <div x-scope="">
     <script lang="ts" context="setup">
-        
         let todos = [{text: 'win case comp', complete: false}, {text: 'make cool slides', complete: false}]
         let newTodo = ''
         const removeToDo = (index) => {
@@ -13,20 +12,18 @@
     </script>
 
     <div>
-        <div>
-            <label>New Todo: </label><input x-model="newTodo"/>
-            <button @click="addToDo()">Add todo</button>
-        </div>
-        <ul x-for="(todo, index) in todos">
-            <li [class]="todo.complete ? 'todo-complete' : 'todo'" @click="removeToDo(index)">
-                #{{ index + 1 }} {{todo.text}}
-            </li>
-        </ul>
+        <label>New Todo: </label><input x-model="newTodo"/>
+        <button @click="addToDo()">Add todo</button>
     </div>
+    <ul x-for="(todo, index) in todos">
+        <li [class]="todo.complete ? 'todo-complete' : 'todo'" @click="removeToDo(index)">
+            #{{ index + 1 }} {{todo.text}}
+        </li>
+    </ul>
 
     <style scoped>
         .label {
-            background-color: red;
+            background-color: x-bind('todos.length < 5 ? green : red');
         }
         .todo:hover {
             text-decoration: line-through;

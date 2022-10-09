@@ -1,10 +1,18 @@
-<template str:label="Count is " num:count="0"><div>
-        <button @click="count--">-</button>
+<template count:number>
+    <script lang="ts" context="setup">
+        export let count = 0
+        let count = initialCount
+        const inc = () => count++
+        const dec = () => count--
+    </script>
+    
+    <div>
+        <button @click="dec()">-</button>
         {{ label }}{{ count }}
-        <button @click="count++">+</button>
-        <!-- <div x-effect="(count++, $emit('test'))">Click Me</div> -->
+        <button @click="inc()">+</button>
     </div>
-    <style>
+    
+    <style scoped>
         button {
             color: red;
         }

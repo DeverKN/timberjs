@@ -20,7 +20,6 @@ export const handleChild = (child: Node, scope: Scope) => {
 
 const handleTextNode = (textNode: Text, scope: Scope) => {
     const mustacheRegex = /{{([^}]*)}}/g
-    // const textTemplate = textNode.nodeValue
     const segments = textNode.nodeValue?.split(mustacheRegex)
     if (segments) {
         let replacements = []
@@ -37,13 +36,11 @@ const handleTextNode = (textNode: Text, scope: Scope) => {
                 isStatic = true
             }
         }
-        // console.log(replacements)
         textNode.replaceWith(...replacements)
     }
 }
 
 const handleElement = (element: Element, scope: Scope) => {
-    // if (isTextNode) 
     if (element.hasAttribute("x-ignore")) return
     for (const {name, value} of Array.from(element.attributes)) {
         if (name.includes("-") || name.includes("@") || name.includes(":") || name.includes("$")) {
@@ -51,16 +48,13 @@ const handleElement = (element: Element, scope: Scope) => {
             let directiveBody = ""
             let directiveArgument = ""
             let directiveModifiers: string[] = []
-            // console.log({name})
             if (name.startsWith(":")) {
                 directiveName = "x-bind";
                 [directiveArgument, ...directiveModifiers] = name.substring(1).split(".");
             } else if (name.startsWith("@")) {
-                // console.log({event: name})
                 directiveName = "x-on";
                 [directiveArgument, ...directiveModifiers] = name.substring(1).split(".");
             } else if (name.startsWith("$")) {
-                // console.log({name})
                 directiveName = "x-let";
                 [directiveArgument, ...directiveModifiers] = name.substring(1).split("."); 
             } else if (name.includes(":")) {

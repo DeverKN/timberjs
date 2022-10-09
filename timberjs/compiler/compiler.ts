@@ -320,22 +320,23 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
         for (const [name, value] of Object.entries(element.attrs)) {
             if (!shouldIgnore) {
                 // console.log({name})
-                const xBindShorthandRegex = /\[([^.]+)\](?:\.([^.]+))*/
-                const bindMatch = name.match(xBindShorthandRegex)
+                // const xBindShorthandRegex = /\[([^.]+)\](?:\.([^.]+))*/
+                // const bindMatch = name.match(xBindShorthandRegex)
                 const isOn = name.startsWith("@")
+                const isBind = name.startsWith(":")
                 // console.log({name})
-                if ((name.includes("-") && !name.startsWith("data")) || isOn || bindMatch) {
+                if ((name.includes("-") && !name.startsWith("data")) || isOn || isBind) {
                     let directiveName: string;
                     let directive: CompilableDirective<any> | undefined;
                     let directiveBody = ""
                     let directiveArgument = ""
                     let directiveModifiers: string[] = []
     
-                    if (bindMatch) {
+                    if (isBind) {
                         directiveName = "x-bind";
                         // const directiveString = name.slice(1, -1);
-                        // console.log({directiveString});
-                        [directiveArgument, ...directiveModifiers] = bindMatch.slice(1);
+                        const directiveString = name.substring(1);
+                        [directiveArgument, ...directiveModifiers] = directiveString.split(".");
                         // console.log({directiveArgument, directiveModifiers})
                     } else if (isOn) {
                         directiveName = "x-on";
