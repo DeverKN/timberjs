@@ -16,7 +16,7 @@
         <button @click="addToDo()">Add todo</button>
     </div>
     <ul x-for="(todo, index) in todos">
-        <li [class]="todo.complete ? 'todo-complete' : 'todo'" @click="removeToDo(index)">
+        <li :class="todo.complete ? 'todo-complete' : 'todo'" @click="removeToDo(index)">
             #{{ index + 1 }} {{todo.text}}
         </li>
     </ul>

@@ -1,7 +1,13 @@
 import postcss from "postcss";
-import namespace from "postcss-plugin-namespace"
+import scoped from "./ScopedStylePlugin"
 
-export const scopeStyles = async (unscopedStyles: string, scopeSelector: string): Promise<string> => {
-    const scopedStyles = (await postcss(namespace(scopeSelector)).process(unscopedStyles, { from: 'src/app.css', to: 'dest/app.css' })).css
-    return scopedStyles
+type CSSBinding = {
+    id: string,
+    exp: string
+}
+
+export const scopeStyles = async (unscopedStyles: string, scopedName: string): Promise<[string, CSSBinding[]]> => {
+    const binds: CSSBinding[] =  []
+    const scopedStyles = (await postcss(scoped(scopedName, binds)).process(unscopedStyles, { from: 'src/app.css', to: 'dest/app.css' })).css
+    return [scopedStyles, binds]
 }

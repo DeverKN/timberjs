@@ -194,7 +194,7 @@ export const compile = async (element: Node, compilerOptions: CompilerOptions, n
             // console.log({attr})
             return `${attr}='${val}'`
         }).join(' ')
-        const scopedStyles = await scopeStyles(styles, `[data-x-style-scope='${styleScope}']`)
+        const [scopedStyles, styleBindings] = await scopeStyles(styles, styleScope)
         htmlString += `<style ${attrsString}>
             ${scopedStyles}
         </style>`

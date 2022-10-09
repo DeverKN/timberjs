@@ -3,3 +3,8 @@ export const useTimer = (interval: number) => {
     setInterval(() => time.value++, interval)
     return time
 }
+
+export const setupTimer = (time: any, interval: number) => {
+    setInterval(() => time.value++, interval)
+    return time
+}

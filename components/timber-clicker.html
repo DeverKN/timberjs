@@ -1,7 +1,10 @@
 <template count:number>
     <script lang="ts" context="setup">
+        import { useTimer, setupTimer } from "./useTimer.ts"
         export let count = 0
-        let count = initialCount
+        let time = useTimer(1000)
+        let otherTime = 0
+        setupTimer($(otherTime), 1000)
         const inc = () => count++
         const dec = () => count--
     </script>
